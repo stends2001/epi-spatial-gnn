@@ -1,5 +1,5 @@
 from dataclasses import dataclass 
-from typing import Optional , Any, Dict, Literal, Union
+from typing import Any, Literal
 from ..utils import GraphType, GraphNormType
 
 class InvalidTopKConfig(Exception):
@@ -19,7 +19,7 @@ class TopKConfig:
         if self.k < 1:
             raise InvalidTopKConfig()
         
-    def asdict(self) -> Dict[str, Union[int, str]]:
+    def asdict(self) -> dict[str, int | str]:
         """returns dictionary-ready representation for in graphconfig(.yaml)"""
         return {'k' : self.k, 'mode': self.mode}
 
@@ -63,7 +63,7 @@ class GraphConfig:
     num_nodes: int
     
     normalization_method: GraphNormType
-    top_k: Optional[TopKConfig]  
+    top_k: TopKConfig | None
 
     args: tuple[Any, ...]
     kwargs: dict[str, Any]

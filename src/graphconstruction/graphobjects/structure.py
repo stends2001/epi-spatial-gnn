@@ -1,6 +1,6 @@
 from dataclasses import dataclass 
 import torch 
-from typing import List, Tuple, Self
+from typing import Self
 
 from ..exceptions import InvalidGraphStructure
 
@@ -52,11 +52,11 @@ class GraphStructure:
         return self._get_adjacency_matrix()
         
     @property
-    def edge_index_list(self) -> List[Tuple[int, int]]:
+    def edge_index_list(self) -> list[tuple[int, int]]:
         return [tuple(edge) for edge in self.edge_index.tolist()]
 
     @property
-    def edge_weight_list(self) -> List[float]:
+    def edge_weight_list(self) -> list[float]:
         return self.edge_weight.tolist()
 
     @property
@@ -97,8 +97,8 @@ class GraphStructure:
     
     @classmethod
     def from_list(cls, 
-                  edge_index:       List[Tuple[int, int]], 
-                  edge_weight:      List[float],
+                  edge_index:       list[tuple[int, int]], 
+                  edge_weight:      list[float],
                   num_nodes:        int) -> Self:
         """
         Returns an instance using Lists as parameters rather than tensors.

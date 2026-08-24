@@ -1,4 +1,3 @@
-from typing import List, Tuple
 import numpy as np 
 from sklearn.metrics.pairwise import euclidean_distances
 import geopandas as gpd 
@@ -46,7 +45,7 @@ class GraphBuilder:
 
         self.methods = get_registered_methods(self.__class__)
 
-    def build(self, method: GraphType, *args, **kwargs) -> Tuple[List[Tuple[int, int]], List[float]]:
+    def build(self, method: GraphType, *args, **kwargs) -> tuple[list[tuple[int, int]], list[float]]:
         """
         buidls edge-index and edge-weights according to method. Specific methods may require *args or **kwargs 
 
@@ -62,7 +61,7 @@ class GraphBuilder:
 
         Returns
         -------
-        edge_index: List[Tuple[int,int]]
+        edge_index: List[tuple[int,int]]
     
         edge_weight: List[float]
         """
@@ -72,7 +71,7 @@ class GraphBuilder:
         return getattr(self, method)(*args, **kwargs)
     
     @registry_method
-    def identity(self) -> Tuple[List[Tuple[int, int]], List[float]]:
+    def identity(self) -> tuple[list[tuple[int, int]], list[float]]:
         """
         Build an identity graph; each node is connected to itself only.
         No parameters required.
@@ -86,7 +85,7 @@ class GraphBuilder:
         return edges, weights
 
     @registry_method
-    def geographical_contiguity(self) -> Tuple[List[Tuple[int, int]], List[float]]:
+    def geographical_contiguity(self) -> tuple[list[tuple[int, int]], list[float]]:
         """
         Build a geographical neighbors graph; each node is connected to its geographical neighbors only.
         No parameters required.
@@ -106,7 +105,7 @@ class GraphBuilder:
                       alpha:             float = 2.0,
                       epsilon:           float = 1e-6,
                       decay:             float = 1.0,
-                      max_distance:      float = 100_000) -> Tuple[List[Tuple[int, int]], List[float]]:
+                      max_distance:      float = 100_000) -> tuple[list[tuple[int, int]], list[float]]:
         """
         Build a gravity-model based graph: connection strength depends on distance and population size.
 
@@ -149,13 +148,13 @@ class GraphBuilder:
         weights: NDArray[np.float64]  = weight_matrix[src, dst]
 
         edges_list                      = list(zip(node_ids[src].astype(int).tolist(), node_ids[dst].astype(int).tolist()))
-        weights_list: List[float]       = weights.tolist()
+        weights_list: list[float]       = weights.tolist()
 
         logging.debug('gravity-model graph built')
         return edges_list, weights_list
  
     @registry_method
-    def random(self, seed: int = 42, k: int = 5) -> Tuple[List[Tuple[int, int]], List[float]]:
+    def random(self, seed: int = 42, k: int = 5) -> tuple[list[tuple[int, int]], list[float]]:
         """
         Build a random graph where each node has approximately k neighbors.
 
@@ -189,7 +188,7 @@ class GraphBuilder:
         return edges, weights
     
     @registry_method    
-    def fully_connected(self) -> Tuple[List[Tuple[int, int]], List[float]]:
+    def fully_connected(self) -> tuple[list[tuple[int, int]], list[float]]:
         """
         Build a fully connected graph where each node is connected to all other nodes with weight 1.
         NOTE: such a graph is computationally expensive!

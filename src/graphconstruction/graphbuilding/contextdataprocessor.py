@@ -1,6 +1,5 @@
 import geopandas as gpd 
 import pandas as pd
-from typing import Dict, Tuple
 from pathlib import Path
 
 from ...utils import compare_sets, MissingColumnError, AdminLevel
@@ -49,7 +48,7 @@ class GraphContextDataProcessor:
         # validate input
         self._validate()
 
-    def process(self) -> Tuple[gpd.GeoDataFrame, pd.DataFrame, Dict[str, int]]:
+    def process(self) -> tuple[gpd.GeoDataFrame, pd.DataFrame, dict[str, int]]:
         """
         processes raw data and returns processed data; shapedata and populationdata
         interanlly calls `_filter()` and `_tokenize()`
@@ -61,7 +60,7 @@ class GraphContextDataProcessor:
         return shp_t, pop_t, map_t
 
     # ============= HIDDEN METHODS ============ #
-    def _load(self) -> Tuple[gpd.GeoDataFrame, pd.DataFrame]:
+    def _load(self) -> tuple[gpd.GeoDataFrame, pd.DataFrame]:
         """loads and returns shapedata and population data"""
         shp = gpd.read_file(self.country_data_path / 'level_shapes.shp')
         pop = pd.read_csv(self.country_data_path  / 'population_size.csv', dtype = {'key': 'str'})        
@@ -80,7 +79,7 @@ class GraphContextDataProcessor:
 
     def _filter(self,
                  shape_data: gpd.GeoDataFrame, 
-                 population_data: pd.DataFrame)  -> Tuple[gpd.GeoDataFrame, pd.DataFrame]:
+                 population_data: pd.DataFrame)  -> tuple[gpd.GeoDataFrame, pd.DataFrame]:
         """filters data on level and year"""
         shp_f = shape_data[shape_data['level'] == self.level].reset_index(drop=True)
         pop_f = population_data[population_data['level'] == self.level].reset_index(drop=True)
@@ -91,7 +90,7 @@ class GraphContextDataProcessor:
 
     def _tokenize(self, 
                  shape_data: gpd.GeoDataFrame, 
-                 population_data: pd.DataFrame) -> Tuple[gpd.GeoDataFrame, pd.DataFrame, Dict[str, int]]:
+                 population_data: pd.DataFrame) -> tuple[gpd.GeoDataFrame, pd.DataFrame, dict[str, int]]:
         """sets a tokenization_map and tokenizes all DataFrames"""
         
         shape_data              = shape_data.copy()

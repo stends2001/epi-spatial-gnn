@@ -1,4 +1,4 @@
-from typing import Optional, List, Dict, Any, Literal
+from typing import Any, Literal
 
 from .builder import GraphBuilder
 from .contextdataprocessor import GraphContextDataProcessor
@@ -99,7 +99,7 @@ class GraphManager:
                         graph_name: str,                         
                         graph_type: GraphType, 
                         normalization_method: GraphNormType, 
-                        top_k: Optional[Dict[str,Any]] = None, 
+                        top_k: dict[str,Any] | None = None, 
                         *args, **kwargs) -> None:
         """
         Main function of the class. Creates and processes a graph strucutre, 
@@ -169,9 +169,9 @@ class GraphManager:
                            graph_type: GraphType,
                            num_nodes: int,
                            normalization_method: GraphNormType,
-                           top_k: Optional[TopKConfig],
-                           *args: List[Any],
-                           **kwargs: Dict[str, Any]) -> GraphConfig:
+                           top_k: TopKConfig | None,
+                           *args: list[Any],
+                           **kwargs: dict[str, Any]) -> GraphConfig:
         """builds and returns an instance of GraphConfig based on input from `construct_graph()`"""
         
         return GraphConfig(
@@ -189,8 +189,8 @@ class GraphManager:
                 variable:   Literal['edge_weights','network','degree','strength','strength_vs_degree'],
                 locality:   Literal['local','global'],
                 plot_type:  Literal['histogram','map'],
-                neighborhood: Optional[int],
-                connections_type: Optional[Literal['in','out']]):
+                neighborhood: int | None,
+                connections_type: Literal['in','out'] | None):
         """ 
         Previews registered GraphStructure from `graph_registry`.
 
@@ -224,8 +224,8 @@ class GraphManager:
             variable: Literal['edge_weights','network','degree','strength','strength_vs_degree'],
             locality: Literal['local','global'],
             plot_type: Literal['histogram','map'],
-            neighborhood: Optional[int] = None,
-            connections_type: Optional[Literal['in','out']] = None
+            neighborhood: int | None = None,
+            connections_type: Literal['in','out'] | None = None
         ):              
             """validates the input given into `preview()`"""               
             match (variable, locality, plot_type, neighborhood, connections_type):

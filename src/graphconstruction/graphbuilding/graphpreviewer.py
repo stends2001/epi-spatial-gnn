@@ -1,4 +1,4 @@
-from typing import Literal, Optional, Tuple, assert_never, Sequence, Dict, cast, Union, List, Any
+from typing import Literal, assert_never, Sequence, cast, Any
 import matplotlib.pyplot as plt
 import seaborn as sns 
 import numpy as np
@@ -37,9 +37,9 @@ class GraphViewer:
              variable:          Literal['edge_weights','network','degree','strength','strength_vs_degree'],
              locality:          Literal['local','global'],
              plot_type:         Literal['histogram','map'],
-             neighborhood:      Optional[int],
-             connections_type:  Optional[Literal['in','out']],
-             *args, **kwargs) -> Tuple[Figure, Axes]:    
+             neighborhood:      int | None,
+             connections_type:  Literal['in','out'] | None,
+             *args, **kwargs) -> tuple[Figure, Axes]:    
         """        
         Main function of GraphViewer
 
@@ -148,7 +148,7 @@ class GraphViewer:
     def _filter_neighborhood(self, 
                              graph_structure: GraphStructure, 
                              neighborhood_node: int, 
-                             connections_type: Literal['in','out']) -> Tuple[torch.Tensor, torch.Tensor]:
+                             connections_type: Literal['in','out']) -> tuple[torch.Tensor, torch.Tensor]:
         """Given neighborhood integer and type of connections, filters the specific neighborhood"""
         node_out, node_in = graph_structure.edge_index  # unpack tensors
 
@@ -195,7 +195,7 @@ class GraphViewer:
         return exclude_levels
 
     # compute - in / out degree
-    def _compute_degree(self, edge_index: torch.Tensor, connections_type: Optional[Literal['in', 'out']] = None) -> torch.Tensor:
+    def _compute_degree(self, edge_index: torch.Tensor, connections_type: Literal['in', 'out'] | None = None) -> torch.Tensor:
         """
         Computes per-node degree from edge_index 
         
@@ -228,7 +228,7 @@ class GraphViewer:
      # compute - in / out degree
     
     # compute - in / out strength
-    def _compute_strength(self, edge_index: torch.Tensor, edge_weight: torch.Tensor, connections_type: Optional[Literal['in', 'out']] = None) -> torch.Tensor:
+    def _compute_strength(self, edge_index: torch.Tensor, edge_weight: torch.Tensor, connections_type: Literal['in', 'out'] | None = None) -> torch.Tensor:
         """
         Computes per-node strength from edge_index 
         
@@ -266,7 +266,7 @@ class GraphViewer:
 
     def _set_style_defaults(self):
 
-        self.map_level_patch_styles: Dict[str, Dict[str, dict]]= {
+        self.map_level_patch_styles: dict[str, dict[str, dict]]= {
             'netherlands': {
                 'lau':      dict(facecolor='none',      edgecolor='darkgrey',   linewidth=0.2,  zorder = 2),              
                 'ggd':      dict(facecolor='none',      edgecolor='black',      linewidth=0.3,  zorder = 3),  
@@ -289,20 +289,20 @@ class GraphViewer:
             }
         }        
 
-        self.node_class_styles: Dict[str, dict] = {
+        self.node_class_styles: dict[str, dict] = {
             'node'      :   dict(markersize=75, edgecolor='black', color='red',                 zorder = 7),
             'neighbor'  :   dict(markersize=45, edgecolor='black', color='orange',              zorder = 8),
             'isolate'   :   dict(markersize=25, edgecolor='black', color='lightgrey',           zorder = 9)
         }
 
-        self.node_class_styles_legend: Dict[str, dict] = {
+        self.node_class_styles_legend: dict[str, dict] = {
             'node'      :   dict(marker = 'o', markersize=10, markeredgecolor='black', label = 'node',      markerfacecolor='red',      linestyle = 'none'),
             'neighbor'  :   dict(marker = 'o', markersize=10, markeredgecolor='black', label = 'neighbor',  markerfacecolor='orange',   linestyle = 'none'),
             'isolate'   :   dict(marker = 'o', markersize=10, markeredgecolor='black', label = 'isolate',   markerfacecolor='lightgrey',linestyle = 'none')
         }  
 
     # histograms    
-    def _plot_degree_histogram_on_ax(self, edge_index: torch.Tensor, ax: Axes, connections_type: Optional[Literal['in', 'out']] = None):
+    def _plot_degree_histogram_on_ax(self, edge_index: torch.Tensor, ax: Axes, connections_type: Literal['in', 'out'] | None = None):
         """calling upon `_compute_degree()`, plot histogram of number of connections"""
         degree = self._compute_degree(edge_index, connections_type)
         bins   = np.arange(0, degree.max().item() + 2) - 0.5
@@ -311,7 +311,7 @@ class GraphViewer:
         ax.set_ylabel('frequency')
         ax.set_xlabel('connections')
 
-    def _plot_strength_histogram_on_ax(self, edge_index: torch.Tensor, edge_weight: torch.Tensor, ax: Axes, connections_type: Optional[Literal['in', 'out']] = None):
+    def _plot_strength_histogram_on_ax(self, edge_index: torch.Tensor, edge_weight: torch.Tensor, ax: Axes, connections_type: Literal['in', 'out'] | None = None):
         """calling upon `_compute_stregnth()`, plot histogram of number of connections"""
         strength = self._compute_strength(edge_index, edge_weight, connections_type)
         bins   = np.arange(0, strength.max().item() + 2) - 0.5
@@ -359,11 +359,11 @@ class GraphViewer:
                 selection_gdf   = background_shape[background_shape['level'] == background_level]
                 selection_gdf.plot(ax=ax, **level_style)              
 
-    def _update_map_layout(self, neighborhood: Optional[int], node_geoms: bool, neighbor_geoms: bool, isolate_geoms: bool, ax: Axes):
+    def _update_map_layout(self, neighborhood: int | None, node_geoms: bool, neighbor_geoms: bool, isolate_geoms: bool, ax: Axes):
         """fixes the map - layout"""
 
         # legend
-        handles: List[Union[Line2D, Patch]] = []     
+        handles: list[Line2D | Patch] = []     
         country_style   = self.map_level_patch_styles[self.country.lower()]
         # looping over levels and associated style
         for background_level, level_style in country_style.items():
@@ -387,7 +387,7 @@ class GraphViewer:
         ax.set_xticks([])
         ax.set_yticks([])  
 
-    def _plot_geompoints_on_ax(self, neighborhood: Optional[int], node_geoms: bool, neighbor_geoms: bool, isolate_geoms: bool, edge_index: torch.Tensor, ax: Axes):
+    def _plot_geompoints_on_ax(self, neighborhood: int | None, node_geoms: bool, neighbor_geoms: bool, isolate_geoms: bool, edge_index: torch.Tensor, ax: Axes):
         """
         plots geompoints on map, by dividng in 3:
         - node_point (when neighborhood is an integer)
@@ -436,7 +436,7 @@ class GraphViewer:
 
         # Build coordinate lookup: node_id (int) -> (x (float), y (float))
         coord_lookup = cast(
-            Dict[int, Dict[str, float]],
+            dict[int, dict[str, float]],
             connection_lines.set_index('node')[['x', 'y']].to_dict('index')
         )
             
@@ -488,7 +488,7 @@ class GraphViewer:
                     zorder=6
                 )
 
-    def _plot_degree_map_on_ax(self, edge_index: torch.Tensor, connections_type: Optional[Literal['in', 'out']], ax: Axes, fig: Figure):
+    def _plot_degree_map_on_ax(self, edge_index: torch.Tensor, connections_type: Literal['in', 'out'] | None, ax: Axes, fig: Figure):
         """plots connections-degree on map. Depending on in/out or None (in+out)"""
 
         degree = self._compute_degree(edge_index, connections_type)
@@ -512,7 +512,7 @@ class GraphViewer:
         mappable = ax.collections[-1] 
         fig.colorbar(mappable, ax=ax, label=cbar_title, shrink=0.5)
   
-    def _plot_strength_map_on_ax(self, edge_index: torch.Tensor, edge_weight: torch.Tensor, connections_type: Optional[Literal['in', 'out']], ax: Axes, fig: Figure):
+    def _plot_strength_map_on_ax(self, edge_index: torch.Tensor, edge_weight: torch.Tensor, connections_type: Literal['in', 'out'] | None, ax: Axes, fig: Figure):
         """plots connections-degree on map. Depending on in/out or None (in+out)"""
 
         strength = self._compute_strength(edge_index, edge_weight, connections_type)
@@ -589,7 +589,7 @@ class GraphViewer:
         edge_index: torch.Tensor, 
         edge_weight: torch.Tensor,
         ax: Axes,
-        connections_type: Optional[Literal['in','out']] = None,
+        connections_type: Literal['in','out'] | None = None,
         log_scale: bool = True
         ):
 

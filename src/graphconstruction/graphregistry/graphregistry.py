@@ -1,4 +1,3 @@
-from typing import Union, List, Dict, Optional, Set
 from pathlib import Path 
 
 from ..graphobjects import GraphObject
@@ -8,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class InvalidGraphName(Exception):
-    def __init__(self, graphname: str, supported_chars: Set[str]):
+    def __init__(self, graphname: str, supported_chars: set[str]):
         msg = f"Graphname '{graphname}' invalid. Supported characters are: {supported_chars}"
         super().__init__(msg)
 
@@ -49,8 +48,8 @@ class GraphRegistry:
     GraphManager
         Each instance of GraphManager has a registry as attribute.
     """
-    def __init__(self, graph_partition_dir: Union[str,Path]):
-        self._registry: Dict[str, GraphObject]= {}
+    def __init__(self, graph_partition_dir: str | Path):
+        self._registry: dict[str, GraphObject]= {}
 
         graph_partition_dir = Path(graph_partition_dir)
         
@@ -68,7 +67,7 @@ class GraphRegistry:
             self._registry[graphname] = entry
             logger.info("Graph '%s' registered.", graphname)
         
-    def get_entry(self, graphname: str) -> Optional[GraphObject]:
+    def get_entry(self, graphname: str) -> GraphObject | None:
         """returns entry from graphname"""
         if not self._check_presence(graphname):
             logger.warning("Graph '%s' could not be found in registry.", graphname)
@@ -129,7 +128,7 @@ class GraphRegistry:
         self.add_entry(graphname, graph_object)
 
     @property 
-    def entry_names(self) -> List[str]:
+    def entry_names(self) -> list[str]:
         return list(self._registry.keys())
     
     # ============ HIDDEN METHODS ================ #

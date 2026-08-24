@@ -1,4 +1,3 @@
-from typing import List
 
 class GraphRegistryMessage:
     """Parent update class"""
@@ -40,7 +39,7 @@ class GraphStructureSaved(GraphRegistryMessage):
 
 class GraphEntryDoesntExist(GraphRegistryMessage):
 
-    def __init__(self, graphname: str, registered_entries: List[str]):
+    def __init__(self, graphname: str, registered_entries: list[str]):
         message = f"Graphname {graphname} does not exist in GraphRegistry. Registered entries are {registered_entries}"
         super().__init__(message)
 

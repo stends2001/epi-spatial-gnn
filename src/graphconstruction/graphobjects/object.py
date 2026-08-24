@@ -1,6 +1,6 @@
 from dataclasses import dataclass 
 import torch 
-from typing import Dict, Self, Union, ClassVar
+from typing import Self, ClassVar
 import os 
 from pathlib import Path 
 
@@ -37,7 +37,7 @@ class GraphObject:
 
     """
     graph:              GraphStructure
-    tokenization_map:   Dict[str, int]   
+    tokenization_map:   dict[str, int]   
     config:             GraphConfig
 
     # these are class variables (has to be typed explicitly as ClassVar when in dataclasses)
@@ -49,7 +49,7 @@ class GraphObject:
     def __post_init__(self):
         self._validate()
 
-    def save(self, path: Union[str, Path]):
+    def save(self, path: str | Path):
         """ 
         Saves four things:
         - graphconfig       => path / config.json
@@ -76,7 +76,7 @@ class GraphObject:
             logger.info('Tokenization map saved under %s.', path.parent / self.tokenization_map_filename)
 
     @classmethod
-    def load(cls, path: Union[str, Path]) -> Self:
+    def load(cls, path: str | Path) -> Self:
         """
         Loads an instance of itself based on supplied path.
         That is, the graph-folder name containing the files:
@@ -115,7 +115,7 @@ class GraphObject:
 
         graphstructure  = GraphStructure(edge_index, edge_weight, graphconfig.num_nodes)
 
-        tokenization_map: Dict[str, int]= load_mapping_dict(path.parent / cls.tokenization_map_filename)
+        tokenization_map: dict[str, int]= load_mapping_dict(path.parent / cls.tokenization_map_filename)
 
         return cls(graphstructure, tokenization_map, graphconfig)
 
@@ -129,7 +129,7 @@ class GraphObject:
             raise InvalidGraphObject(f'Found doubles inside the values of tokenzation map!')    
 
     @property 
-    def reverse_tokenization_map(self) -> Dict[int, str]:
+    def reverse_tokenization_map(self) -> dict[int, str]:
         return  {v: k for k, v in self.tokenization_map.items()}
     
     def __repr__(self) -> str:
