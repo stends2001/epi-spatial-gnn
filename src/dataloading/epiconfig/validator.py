@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import assert_never
+from typing import assert_never, TYPE_CHECKING
 
 from .exceptions import EpiConfigLimitationError, EpiConfigValidationError
 from ...utils import ExceptionReport, PathNotFound
 
-from .epiconfig import EpiConfig
+if TYPE_CHECKING:
+    from .epiconfig import EpiConfig
 
 import logging
 logger = logging.getLogger(__name__)
