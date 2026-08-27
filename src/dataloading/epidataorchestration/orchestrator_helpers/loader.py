@@ -10,6 +10,8 @@ from ..containers import RawEpiData
 class EpiDataReader:
     """
     ``EpiDataOrchestrator`` utility class that creates the ``RawEpiData``.
+    Besides a handful of helper methods, ``EpiDataReader`` has an ``orchestrate()`` 
+    method, which returns the ``RawEpiData``.
 
     Parameters
     ----------
