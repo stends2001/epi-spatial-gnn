@@ -10,19 +10,22 @@ class RawEpiData:
     """
     """
 
-    disease:                pd.DataFrame
-    population_size:        pd.DataFrame
-    shapedata:              gpd.GeoDataFrame
-    region_harmonization:   pd.DataFrame    
-    tokenization_map:       dict[str, int]
+    disease : pd.DataFrame
+    population_size : pd.DataFrame
+    shapedata : gpd.GeoDataFrame
+    region_harmonization : pd.DataFrame    
+    tokenization_map : dict[str, int]
     
-    _population_density:     pd.DataFrame | None = None
+    _population_density : pd.DataFrame | None = None
     
     @property
     def population_density(self) -> pd.DataFrame:
         df = self._population_density
         if df is None: 
-            raise NonExistentAttributeEpiDataContainer(self.__class__.__name__, 'population_density')
+            raise NonExistentAttributeEpiDataContainer(
+                self.__class__.__name__, 
+                'population_density'
+                )
         return df          
 
     def __repr__(self):

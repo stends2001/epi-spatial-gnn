@@ -12,8 +12,8 @@ class FinalizedEpiData:
     ----------
     epidata: pd.DataFrame
     """     
-    data:        pd.DataFrame
-    data_denorm: pd.DataFrame
+    data : pd.DataFrame
+    data_denorm : pd.DataFrame
 
     def __repr__(self):
         representation = (f"<{self.__class__.__name__}(data {checkmark},"

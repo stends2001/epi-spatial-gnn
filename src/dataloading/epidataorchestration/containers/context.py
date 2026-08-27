@@ -12,15 +12,15 @@ class ContextEpiData:
     """
 
     """    
-    country:                Country
-    level:                  AdminLevel
-    global_shapedata:       gpd.GeoDataFrame   
-    local_shapedata:        gpd.GeoDataFrame     
-    population_size:        pd.DataFrame
-    nodenames:              pd.DataFrame
-    region_harmonization:   pd.DataFrame
-    tokenization_map:       dict[str, int]
-    temporal_summary:       'EpiDataTemporalSummary'
+    country : Country
+    level : AdminLevel
+    global_shapedata : gpd.GeoDataFrame   
+    local_shapedata : gpd.GeoDataFrame     
+    population_size : pd.DataFrame
+    nodenames : pd.DataFrame
+    region_harmonization : pd.DataFrame
+    tokenization_map : dict[str, int]
+    temporal_summary : 'EpiDataTemporalSummary'
 
     @property
     def num_nodes(self) -> int:
