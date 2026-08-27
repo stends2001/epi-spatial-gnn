@@ -8,7 +8,9 @@ from .exceptions import TemporalError
 # ==== helper functions ===== #
 
 def convert_to_next_monday(date: datetime, day_int = 0) -> datetime:
-    """returns datetime object thats just shifted to the next version of day int where 0 means Monday"""
+    """
+    Returns datetime object shifted to the next version of day int where 0 means Monday
+    """
     if date.weekday() != day_int:
         days_ahead = (day_int - date.weekday()) % 7
         if days_ahead == 0:  # If we want same day, go to next week
@@ -24,30 +26,37 @@ def convert_to_month_start(date: datetime) -> datetime:
 
 class EpiDataTemporalSummary:
     """
-    Stores all the temporal information from EpiConfig, and 
-    deals with it in terms of splitting logic, extending dates, 
-    and shifting to the future vs past.
+    Stores all the temporal information from ``EpiConfig``, and splits periods 
+    temporally (extending dates, shifting to the future vs past).
 
-    This should be called by EpiDataOrchestrator which creates
-    an instance based on EpiConfig: the input parameters overlap largely.
+    ``EpiDataTemporalSummary`` should be called by ``EpiDataOrchestrator`` which creates
+    an instance based on ``EpiConfig``: the input parameters overlap largely. 
+    ``EpiDataTemporalSummary`` should not be called in itself.
 
     Parameters
     ----------
-    temporal_frequency: str
-    min_date: str
-    max_date: str
-    split_trainval: str
-    split_valtest: str
+    temporal_frequency : str
+    min_date : str
+    max_date : str
+    split_trainval : str
+    split_valtest : str
 
-    horizon_size: int
-    horizon_leadtime: int
-    num_lags: int
-    sequence_length: int
+    horizon_size : int
+    horizon_leadtime : int
+    num_lags : int
+    sequence_length : int
 
     See Also
     --------
-    EpiDataOrchestrator: calls this class    
-    EpiConfig: configuration used to create a class of this.
+    ``EpiDataOrchestrator``
+        The orchestrator behind getting data model-ready. ``EpiDataOrchestrator`` calls
+        ``EpiDataTemporalSummary``.
+    ``EpiConfig``
+        Dictates the splitting dates, and other temporal decisions taken and dealt with
+        by ``EpiDataTemporalSummary``.
+    ``ContextEpiData``
+        A data container as an intermediate stage in the data-orchestration process,
+        that takes and stores ``EpiDataTemporalSummary``.
     """
     def __init__(self, 
                  temporal_frequency: str,
