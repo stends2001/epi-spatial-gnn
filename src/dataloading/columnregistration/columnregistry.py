@@ -13,62 +13,94 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ColumnRegistry:
     """
-    Stores and manages column metadata for the data-preparation pipeline (EpiDataOrchestrator).
-    Provides easy access to columns by type and normalization information.
+    Stores and manages column metadata through ``ColEntry`` instances. These are used in
+    the data-preparation pipeline guided through ``EpiDataOrchestrator``. Provides easy 
+    access to columns by type and normalization information.
+
+    Takes no parameters
 
     Methods
     -------
-    - `add_column()`
-    - `update_transformation()`
+    ``add_column()``   
+        Add a ``ColumnEntry`` .
+    ``update_transformation()``
+        Update transformation parameters associated with a ``ColumnEntry``.
 
-    - `get_entries_names_by_type()`
-    - `get_entries_by_type()`
-    - `get_transformation_groups()`
-    - `get_entry_by_name()`
-
-    - `context_columns`
-    - `feature_columns`
-    - `target_columns`
-    - `pred_columns`
-    - `split_columns`
-    - `registered_column`
+    ``get_entries_names_by_type()``
+        Get a list of the names of all saved ``ColumnEntry``s.
+    ``get_entries_by_type()``
+        Get a list of the ``ColumnEntry``s by type.
+    ``get_transformation_groups()``
+        Get a list of all transformation groups of the saved ``ColumnEntry``s.
+    ``get_entry_by_name()``
+        Get the ``ColumnEntry`` associated with a name.
 
     Attributes
     ----------
-    - `_entries`
-        the list of columns stored
+    ``context_columns``
+        List of column names with ``column_type`` == ``'context'``.
+    ``feature_columns``
+        List of column names with ``column_type`` == ``'feature'``.    
+    ``target_columns``
+        List of column names with ``column_type`` == ``'target'``.    
+    ``pred_columns``
+        List of column names with ``column_type`` == ``'pred'``.    
+    ``split_columns``
+        List of column names with ``column_type`` == ``'split'``.    
+    ``registered_column``
+        List of all column names.    
 
     See Also
     --------
-    - ColEntry
+    ``ColEntry`` : A single entry stored in ``ColumnRegistry`` that contains metadata
+    of a single column.
+
+    Downstream
+    ----------
+    ``EpiDataOrchestrator`` Stores information on columns in ``ColEntry`` instances,
+    which are stored in ``ColumnRegistry``.
 
     Examples
     --------
+    >>> column_registration = ColumnRegistry()
+    >>> column_registration.add_column(
+    ...     'target', 
+    ...     'target',
+    ...     transformation = True,
+    ...     transformation_group = 'self'
+    ...     )           
+    >>> log_params = LogParams(shift=self.epiconfig.log_shift)
+    ... column_registration.update_transformation(
+    ...     'target', 
+    ...     log_params
+    ...     )
     """
     _entries: list[ColEntry] = field(default_factory=list)
     
     # ========= ADJUSTING / UPDATING COLUMNREGISTRATION ======= #
     def add_column(self, 
-                   column_name:             str, 
-                   column_type:             ColumnType, 
-                   needs_normalization:     bool                            = False,                   
-                   transformation_group:    str | None                   = None, 
-                   transformation_params:   TransformationParams | None  = None):
+                   column_name : str, 
+                   column_type : ColumnType, 
+                   transformation : bool = False,                   
+                   transformation_group : str | None = None, 
+                   transformation_params : TransformationParams | None  = None):
         """
-        Adds columns to its list of entries (`._entries`)
-        All inputs here correspond to those of a ColEntry.
-        For further information, please see ColEntry.
+        Adds columns to its list of entries. All inputs here correspond to those of
+        ``ColEntry``. For further information, please see ``ColEntry``.
         """
         # if transformation is guided by another column, validate that that column 
         # already exists in registry
         if transformation_group is not None and transformation_group != 'self':
             if transformation_group not in self.registered_columns:
-                raise MissingTransformationReferral(column_name, transformation_group)
+                raise MissingTransformationReferral(
+                    column_name, 
+                    transformation_group
+                    )
 
         # Create the column entry
         entry = ColEntry(column_name            = column_name,
                          column_type            = column_type,
-                         transformation         = needs_normalization,
+                         transformation         = transformation,
                          _transformation_group  = transformation_group,
                          _transformation_params = transformation_params)
         
@@ -77,17 +109,18 @@ class ColumnRegistry:
         logger.debug("ColEntry '%s' added.", column_name)                  
     
     def update_transformation(self, 
-                              column_name: str, 
-                              params:      LogParams | ZScoreParams | MinMaxParams) -> None:
+                              column_name : str, 
+                              params : LogParams | ZScoreParams | MinMaxParams) -> None:
         """
-        Adjust the transformation_params of a ColEntry that may or may not already exist.
+        Adjust the transformation_params of a ColEntry that may or may not already 
+        exist.
 
         Parameters
         ----------
-        column_name: str
-            name under which column is saved in registry
-        params: Union[LogParams, ZScoreParams, MinMaxParams]
-            parameters to be saved at ColEntry
+        column_name : str
+            Name under which column is saved in ``ColumnRegistry``.
+        params : LogParams | ZScoreParams | MinMaxParams
+            Parameters to be saved at this ``ColEntry``.
         """
         col = self.get_entry_by_name(column_name)
 
@@ -100,26 +133,36 @@ class ColumnRegistry:
             case LogParams():
             
                 if col._transformation_params.log is not None:
-                    raise TransformationParamsAlreadySet(column_name, params.__class__.__name__)
+                    raise TransformationParamsAlreadySet(
+                        column_name, 
+                        params.__class__.__name__
+                        )
             
                 col._transformation_params.log = params
                 
             case ZScoreParams():
 
                 if col._transformation_params.zscore is not None:
-                    raise TransformationParamsAlreadySet(column_name, params.__class__.__name__)
+                    raise TransformationParamsAlreadySet(
+                        column_name, 
+                        params.__class__.__name__
+                        )
             
                 col._transformation_params.zscore = params
 
             case MinMaxParams():
                 if col._transformation_params.minmax is not None:
-                    raise TransformationParamsAlreadySet(column_name, params.__class__.__name__)
+                    raise TransformationParamsAlreadySet(
+                        column_name, 
+                        params.__class__.__name__
+                        )
             
                 col._transformation_params.minmax = params                            
 
             case _:
                 raise ValueError(f"Unsupported params type: {type(params)}")
-        logger.debug("ColEntry '%s' _transformation_params transform_params updated.", column_name)                  
+        logger.debug("ColEntry '%s' _transformation_params transform_params updated.", 
+                     column_name)                  
         
     # ========= INTERACTING ======= #        
     def get_entries_names_by_type(self, column_type: str) -> list[str]:
@@ -127,7 +170,7 @@ class ColumnRegistry:
         return [col.column_name for col in self._entries if col.column_type == column_type]
     
     def get_entries_by_type(self, column_type: str) -> list[ColEntry]:
-        """Get all ColEntry instances of a specific type"""
+        """Get all ``ColEntry`` instances of a specific type"""
         return [col for col in self._entries if col.column_type == column_type]
     
     def get_transformation_groups(self) -> dict[str, list[str]]:
@@ -137,12 +180,14 @@ class ColumnRegistry:
         Returns:
         --------
         dict : {normalization_group: [column_names]}
-            Keys are the reference columns (or column name itself if ColEntry.transformation_group == 'self')
+            Keys are the reference columns (is the column name itself, when 
+            ``transformation_group`` == ``self``.)
             Values are lists of columns that share that normalization
         """
         groups: dict[str, list[str]] = {}
         for entry in self._entries:
             if entry.transformation:
+
                 # Use the column itself as key if normalization_group is 'self'
                 if entry._transformation_group:
                     key = entry.transformation_group if entry.transformation_group != 'self' else entry.column_name
