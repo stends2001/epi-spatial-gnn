@@ -1,17 +1,31 @@
 import time
 import json
-from typing import assert_never, TYPE_CHECKING, Dict
+from typing import assert_never
 import pandas as pd
 import geopandas as gpd
-from ....utils.textformatting import checkmark
 
 from ...epiconfig import EpiConfig
-
 from ..containers import RawEpiData
 
-# ============= DATA IMPORTATION CLASS =============
 class EpiDataReader:
     """
+    ``EpiDataOrchestrator`` utility class that creates the ``RawEpiData``.
+
+    Parameters
+    ----------
+    epiconfig : EpiConfig
+        Large configuration class that dictates which data to load.
+
+    See Also
+    --------
+    ``EpiPathsManager``
+        Collects the paths of data to be retrieved by ``EpiDataReader``.
+
+    Downstream
+    --------
+    ``EpiDataOrchestrator`` has six utility classes, each of which is responsible
+    for a single stage in the pipeline of getting model-ready datasets. 
+    ``EpiDataReader`` is the first one.
     """
     
     def __init__(self, epiconfig: EpiConfig):
@@ -34,20 +48,19 @@ class EpiDataReader:
         time_end = time.time()
 
         return rawdata
-  
-    # ======= MANDATORY DATA ======= #
 
     def _load_disease_data(self) -> pd.DataFrame:
         """
-        loads disease data cleaned from survstat
+        loads disease data from path in ``EpiPathsManager``. Expected columns are:
+        - ``'timestamp'``
+        - ``'nuts3_key'``
+        - ``'cases'``
 
-        German df looks like:
-        __________________________________________________________
-        | 'week' | 'nuts3_key' | 'cases' | 'year ' | 'timestamp' |
-
-        Dutch df looks like:
-        _______________________________________
-        | 'timestamp' | 'cases' | 'lau_key ' | 
+        Returns
+        -------
+        pd.DataFrame
+            Raw case data per week per NUTS3 - region, with the timestamp read as 
+            TimeDelta. 
         """        
         filepath    = self.epiconfig.path_manager.get('cases')
 
@@ -63,7 +76,6 @@ class EpiDataReader:
             case _:
                 assert_never(self.epiconfig.country)
 
-                
         df = pd.read_csv(
             filepath,
             parse_dates = ['timestamp'],
@@ -71,17 +83,21 @@ class EpiDataReader:
                            'cases':      int}
         ).rename(columns={initial_key: renamed_key})
         
-
-        
         return df
     
     def _load_population_size_data(self) -> pd.DataFrame:
         """
-        loads population data
+        loads population size data from path in ``EpiPathsManager``. 
+        Expected columns are:
+        - ``'level'``
+        - ``'key'``
+        - ``'year'``
+        - ``'population_size'``
 
-        df looks like:
-        _______________________________________________
-        | 'level' | 'key' | 'year' | 'population_size |       
+        Returns
+        -------
+        pd.DataFrame
+            Raw population size data per year per level, per spatial unit. 
         """         
         filepath = self.epiconfig.path_manager.get('population_size')
         
@@ -89,64 +105,83 @@ class EpiDataReader:
             filepath,
             dtype = {'key' : str}
         )
-
-        
         return df
 
     def _load_shapedata(self) -> gpd.GeoDataFrame:
         """
-        loads shapedata for the specified nuts level
+        loads shapedata for the entire country, with every level and every unit.
+        Expected columns are:
+        - ``'level'``
+        - ``'key'``
+        - ``'geometry'``
 
-        gdf looks like:
-        __________________________________________
-        | 'level' | 'key' | 'geometry' |
-
+        Returns
+        -------
+        gpd.GeoDataFrame
+            Raw shape data per year per level, per spatial unit.         
         """          
         filepath = self.epiconfig.path_manager.get('shapefile')
         
         gdf             = gpd.read_file(filepath)
         gdf['key']      = gdf['key'].astype(str)
-        
-        
         return gdf
       
     def _load_regional_harm(self) -> pd.DataFrame:
         """
-        loads harmonization data for nuts divisions in Germany
+        Loads regional harmonization data from path in ``EpiPathsManager``. This data 
+        frame covers which NUTS3 units belong to which NUTS2 and NUTS1 regions. 
+        Expected columns are:
+        - ``'nuts3_key'``
+        - ``'nuts2_key'``
+        - ``'nuts1_key'``
+        - ``'nuts3_name'``
+        - ``'nuts2_name'``
+        - ``'nuts1_name'``
 
-        df looks like this for Germany:
-        _________________________________________________________________________________________
-        | 'nuts3_key' | 'nuts2_key' | 'nuts1_key' | 'nuts3_name' | 'nuts2_name' | 'nuts1_name' |
-
+        Returns
+        -------
+        pd.DataFrame
+            Raw regional harmonization data      
         """  
 
         filepath = self.epiconfig.path_manager.get('region_harmonization')   
         
         df = pd.read_csv(filepath, sep='\t', dtype=str)
-        
-
         return df
 
-    def _load_tokenization_map(self) -> Dict[str, int]:
+    def _load_tokenization_map(self) -> dict[str, int]:
+        """
+        Loads the tokenization map used for the graph structures. For each country/level 
+        combination (e.g. Germany NUTS3), there should be a tokenization_map.json saved,
+        created by the ``GraphConstruction`` - module.        
+
+        Returns
+        -------
+        dict[str, int]
+            Tokenization map where keys correspond to the original keys at this 
+            administrative level and values to the integer of the token.
+        """
         
         filepath = self.epiconfig.path_manager.get('tokenization_map')       
 
         with open(filepath, "r") as f:
             tokenization_map = json.load(f)
-        
-
         return tokenization_map   
 
-    # optional data
     def _load_population_density(self) -> pd.DataFrame:
         """
-        loads population density data for the specified nuts level
+        loads population density data from path in ``EpiPathsManager``. 
+        Expected columns are:
+        - ``'level'``
+        - ``'key'``
+        - ``'year'``
+        - ``'population_density'``
 
-        df looks like:
-        __________________________________________________________________
-        | 'level' | 'key' | 'year' | 'population_density' |
-
-        """          
+        Returns
+        -------
+        pd.DataFrame
+            Raw population density data per year per level, per spatial unit. 
+        """              
         filepath = self.epiconfig.path_manager.get('population_density')
         
         df = pd.read_csv(
