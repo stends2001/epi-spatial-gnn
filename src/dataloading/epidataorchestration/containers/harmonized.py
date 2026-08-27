@@ -1,6 +1,5 @@
 import pandas as pd 
 from dataclasses import dataclass
-from typing import Optional
 
 from ..utils import NonExistentAttributeEpiDataContainer
 from ....utils.textformatting import checkmark
@@ -11,8 +10,8 @@ class HarmonizedEpiData:
     """        
     epidata:            pd.DataFrame
 
-    _population_size:    Optional[pd.DataFrame] = None
-    _population_density: Optional[pd.DataFrame] = None
+    _population_size:    pd.DataFrame | None = None
+    _population_density: pd.DataFrame | None = None
 
     @property
     def population_size(self) -> pd.DataFrame:

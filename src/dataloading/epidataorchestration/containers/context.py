@@ -1,7 +1,6 @@
 import pandas as pd 
 import geopandas as gpd
 from dataclasses import dataclass
-from typing import Literal, Dict
 
 from ..utils import EpiDataTemporalSummary
 from ....utils import Country, AdminLevel
@@ -20,7 +19,7 @@ class ContextEpiData:
     population_size:        pd.DataFrame
     nodenames:              pd.DataFrame
     region_harmonization:   pd.DataFrame
-    tokenization_map:       Dict[str, int]
+    tokenization_map:       dict[str, int]
     temporal_summary:       'EpiDataTemporalSummary'
 
     @property

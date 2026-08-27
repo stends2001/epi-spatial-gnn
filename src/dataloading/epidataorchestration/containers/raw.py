@@ -1,7 +1,6 @@
 import pandas as pd 
 import geopandas as gpd
 from dataclasses import dataclass
-from typing import Optional, Dict
 
 from ..utils import NonExistentAttributeEpiDataContainer
 from ....utils.textformatting import checkmark
@@ -15,9 +14,9 @@ class RawEpiData:
     population_size:        pd.DataFrame
     shapedata:              gpd.GeoDataFrame
     region_harmonization:   pd.DataFrame    
-    tokenization_map:       Dict[str, int]
+    tokenization_map:       dict[str, int]
     
-    _population_density:     Optional[pd.DataFrame] = None
+    _population_density:     pd.DataFrame | None = None
     
     @property
     def population_density(self) -> pd.DataFrame:
