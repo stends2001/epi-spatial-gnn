@@ -1,26 +1,43 @@
 import time
-from typing import assert_never, TYPE_CHECKING , Dict, Tuple, Literal, Optional, Union
+from typing import Literal
 import pandas as pd
 import geopandas as gpd
 
 from ...epiconfig import EpiConfig
-
-from ....utils.textformatting import checkmark
 from ..utils import berlin_district_ids, berlin_id, EpiDataOrchestrationError, EpiDataTemporalSummary
-
 from ..containers import RawEpiData, HarmonizedEpiData, ContextEpiData
 
 # ============= HARMONIZATION CLASS =============
 class EpiDataHarmonizer:
     """
+    ``EpiDataOrchestrator`` utility class that creates the ``HarmonizedEpiData`` and
+    ``ContextEpiData``. Besides a handful of helper methods, ``EpiDataHarmonizer`` has 
+    an ``orchestrate()`` method, which returns the ``HarmonizedEpiData`` and 
+    ``ContextEpiData``.
+
+    Parameters
+    ----------
+    epiconfig : EpiConfig
+        Large configuration class that dictates which data to load.
+
+    See Also
+    --------
+    ``EpiDataTemporalSummary``
+        Helper class that stores temporal information, built based on ``EpiConfig``.
+
+    Downstream
+    --------
+    ``EpiDataOrchestrator`` has six utility classes, each of which is responsible
+    for a single stage in the pipeline of getting model-ready datasets. 
+    ``EpiDataHarmonizer`` is the second one.
     """
     def __init__(self, epiconfig: EpiConfig):
         self.epiconfig = epiconfig   
 
     def _mutate_berlin_districts(self, epidemiology_df: pd.DataFrame) -> pd.DataFrame:
         """
-        When berlin not to be split -> mutate all nuts3 values of the districts into
-        berlin ones (11000) for the subsequent aggregation onto nuts3/nuts2/nuts1 levels.
+        Mutates all NUTS3 values of the Berlin districts into Berlin key (``'11000'``) 
+        for the subsequent aggregation onto nuts3/nuts2/nuts1 levels.
         """
         epidemiology_df.loc[epidemiology_df['nuts3_key'].isin(berlin_district_ids), 'nuts3_key'] = berlin_id
 
@@ -115,7 +132,7 @@ class EpiDataHarmonizer:
         resampled_df                        = resampled_df[[self.epiconfig.temporal_column,f'key','cases','year','population_size']]
         return resampled_df
 
-    def _apply_tokenization(self, df: pd.DataFrame, tokenization_map: Dict[str, int], drop_key: bool = True):
+    def _apply_tokenization(self, df: pd.DataFrame, tokenization_map: dict[str, int], drop_key: bool = True):
         """
         applies tokeninization found in tokenization map, through:
 
@@ -151,7 +168,7 @@ class EpiDataHarmonizer:
                                     self.epiconfig.lag_num,
                                     self.epiconfig.sequence_length)        
 
-    def orchestrate(self, rawdata: 'RawEpiData') -> Tuple['HarmonizedEpiData', 'ContextEpiData']:
+    def orchestrate(self, rawdata: 'RawEpiData') -> tuple['HarmonizedEpiData', 'ContextEpiData']:
         """
         The function that orchestrates all others
         """
@@ -187,7 +204,7 @@ class EpiDataHarmonizer:
             "population_density_data"   : ("feature_popdens",       "population_density")
         }
 
-        feature_datasets: Dict[str, Optional[Union[pd.DataFrame, gpd.GeoDataFrame]]] = {dataname: None for dataname in features}
+        feature_datasets: dict[str, pd.DataFrame | gpd.GeoDataFrame | None] = {dataname: None for dataname in features}
 
         for out_name, (feature_flag, raw_attr) in features.items():
             if getattr(self.epiconfig, feature_flag):
