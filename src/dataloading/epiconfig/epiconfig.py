@@ -1,6 +1,7 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Literal, assert_never
+from typing import Literal
 from pathlib import Path
 import yaml
 import dataclasses
@@ -16,46 +17,153 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class EpiConfig:
+    """
+    Configuration dataclass that dictates how ``EpiDataOrchestrator`` turns raw data
+    into model-ready dataloaders.
+
+    Parameters
+    ----------
+    disease : Disease   
+    temporal_frequency : Literal['m','w','d']= 'w'
+    min_date : str = '2011-01-01'
+    max_date : str = '2020-06-01'
+    split_trainval : str = '2018-06-01'
+    split_valtest : str = '2019-06-01'
+ 
+    country: Country = 'germany'
+    level: AdminLevel = 'nuts3'
+ 
+    horizon_size : int = 1
+    horizon_leadtime : int = 1
+
+    time_index_d : bool = False
+    time_index_w : bool = True
+    time_index_m:  bool = False
+    lag_column : str  = 'incidence'
+    lag_num : int  = 1
+    sequence_length : int  = 1
+    incidence_scalar : int  = 10_000    
+
+    feature_popsize : bool = False      
+    feature_popdens : bool = False
+
+    normalization_method : Literal['minmax', 'zscore'] | None = 'zscore'
+    log_transform : list[str] | None = None
+    log_shift : float = 1.0        
+            
+    temporal_column : str = 'timestamp'
+    target_column : str = 'incidence'
+    id_column : str = 'node'
+    pred_column : str = 'pred'
+
+    Methods
+    -------
+    ``save_config()``
+        Save an EpiConfig to a path (`.yaml`).
+    ``load_config()``
+        Load an EpiConfig from a path (`.yaml`).
+    ``copy()``
+        Copy an EpiConfig.
+    ``get_summary()``
+        Get a visually pleasing an understandable summary of ``EpiConfig``.
+
+    See Also
+    --------
+    ``EpiDataOrchestrator``
+        Uses an ``Epiconfig`` to create a model-ready dataframe.
+
+    ``EpiPathsManager``
+        Helper class to ``EpiConfig`` that stores paths.
+
+    ``EpiConfigValidator``
+        Helper class to ``EpiConfig`` that validates the input and paths.
+
+    Downstream
+    ----------
+    ``EpiConfig`` stores all configuration information needed to transform raw data
+    into model-ready datasets by ``EpiDataOrchestrator``. ``EpiValidator`` validates the
+    input to ``EpiConfig``, as well as the paths that ``EpiPathsManager`` stores.  
+
+    Any model instance uses a ``BaseLineDataBuilder`` or a ``GraphDataBuilder``. These 
+    are both created based on the same ``FinalizedEpiData`` instance of the 
+    ``EpiDataOrchestrator``.       
+
+    Examples
+    --------
+    >>> experiment_1a_epicfg = EpiConfig(
+    ...     disease             = 'influenza',
+    ...     temporal_frequency  = 'w',
+    ...     min_date            = '2012-06-01',
+    ...     max_date            = '2020-06-01',
+    ...     split_trainval      = '2018-06-01',
+    ...     split_valtest       = '2019-06-01' ,  
+    ...     country             = 'germany',
+    ...     level               = 'nuts3',
+    ...     horizon_size        = 1,
+    ...     horizon_leadtime    = 1,
+    ...     time_index_d        = False,
+    ...     time_index_m        = False,
+    ...     time_index_w        = True,
+    ...     lag_column          = 'incidence',
+    ...     lag_num             = 1, 
+    ...     sequence_length     = 4,
+    ...     incidence_scalar    = 10_000,
+    ...     feature_popdens     = True,
+    ...     feature_popsize     = True,
+    ...     normalization_method= 'zscore',
+    ...     log_transform       = ['incidence'],
+    ...     log_shift           = 1,
+    ...     temporal_column     = 'timestamp',
+    ...     target_column       = 'incidence',
+    ...     id_column           = 'node',
+    ...     pred_column         = 'pred'
+    ...     )
+    >>> experiment_1a_epicfg = EpiConfig.load_config(
+    ...     self.path_exp / self.epicfg_filename
+    ...     )     
+    ... edo = EpiDataOrchestrator(experiment_1a_epicfg).build()    
+
+    """
     # ============= MAIN =============
-    disease:                Disease   
+    disease : Disease   
     
     # ============= TEMPORAL =============
-    temporal_frequency:     Literal['m','w','d']= 'w'
-    min_date:               str = '2011-01-01'
-    max_date:               str = '2020-06-01'
-    split_trainval:         str = '2018-06-01'
-    split_valtest:          str = '2019-06-01'
+    temporal_frequency : Literal['m','w','d']= 'w'
+    min_date : str = '2011-01-01'
+    max_date : str = '2020-06-01'
+    split_trainval : str = '2018-06-01'
+    split_valtest : str = '2019-06-01'
     
     # ============= GEOGRAPHY =============
-    country:                Country     = 'germany'
-    level:                  AdminLevel  = 'nuts3'
+    country : Country = 'germany'
+    level : AdminLevel = 'nuts3'
     
     # ============= TASK =============
-    horizon_size:           int = 1
-    horizon_leadtime:       int = 1
+    horizon_size : int = 1
+    horizon_leadtime : int = 1
     
     # ============= FEATURES =============
-    time_index_d:           bool = False
-    time_index_w:           bool = True
-    time_index_m:           bool = False
-    lag_column:             str  = 'incidence'
-    lag_num:                int  = 1
-    sequence_length:        int  = 1
-    incidence_scalar:       int  = 10_000    
+    time_index_d : bool = False
+    time_index_w : bool = True
+    time_index_m : bool = False
+    lag_column : str  = 'incidence'
+    lag_num : int  = 1
+    sequence_length : int  = 1
+    incidence_scalar : int  = 10_000    
 
-    feature_popsize:        bool = False      
-    feature_popdens:        bool = False
+    feature_popsize : bool = False      
+    feature_popdens : bool = False
 
     # ============= NORMALIZATION =============
-    normalization_method:   Literal['minmax', 'zscore'] | None = 'zscore'
-    log_transform:          list[str] | None = None
-    log_shift:              float = 1.0        
+    normalization_method : Literal['minmax', 'zscore'] | None = 'zscore'
+    log_transform : list[str] | None = None
+    log_shift : float = 1.0        
             
     # ============= COLUMN NAMES =============
-    temporal_column:        str = 'timestamp'
-    target_column:          str = 'incidence'
-    id_column:              str = 'node'
-    pred_column:            str = 'pred'
+    temporal_column : str = 'timestamp'
+    target_column : str = 'incidence'
+    id_column : str = 'node'
+    pred_column : str = 'pred'
 
     # ============= DUNDER ============ #
     def __post_init__(self):
@@ -72,7 +180,9 @@ class EpiConfig:
         logger.debug('EpiConfig has been created')           
 
     # ============ Methods =========== #
-    def assert_equals(self, other: EpiConfig | dict[str,str], level: Literal[0,1,2,3,4] = 1) -> None:
+    def assert_equals(self, 
+                      other: EpiConfig | dict[str,str], 
+                      level: Literal[0,1,2,3,4] = 1) -> None:
         """for DeepModel - loading use level = 1. For Evaluator use level = 2!"""        
         self_summary  = self.get_summary(level)
         if isinstance(other, dict):

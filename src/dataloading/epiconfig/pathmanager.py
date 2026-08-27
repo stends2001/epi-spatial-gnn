@@ -1,14 +1,13 @@
 from typing import Callable
 from pathlib import Path
 import inspect
-from abc import ABC
 
 from ...utils import PathManager, Country, AdminLevel, Disease
 
 def registered_property(func: Callable) -> Callable:
     """
     Marks a property and ensures the returned path exists.
-    Must be used BEFORE @property.
+    This decorator must be used BEFORE ``@property``.
     """
     def wrapper(self):
         path = func(self)
@@ -23,7 +22,7 @@ def registered_property(func: Callable) -> Callable:
 
 def get_registered_properties(cls: type) -> list[str]:
     """
-    Returns names of all properties decorated with @registered_property.
+    Returns names of all properties decorated with ``@registered_property``.
     """
     return [
         name
@@ -31,13 +30,47 @@ def get_registered_properties(cls: type) -> list[str]:
         if isinstance(attr, property) and getattr(attr.fget, '_is_path', False)
     ]
 
-class EpiPathsManager(ABC):
+class EpiPathsManager:
     """
+    Stores paths relevant to ``EpiConfig``. 
+
+    Parameters
+    ----------
+    country : Country
+        The country fow which data needs to be retrieved.
+    level : AdminLevel
+        The admininstrative level for which data needs to be retrieved.
+    disease: Disease
+        The disease for which case data needs to be retrieved.
+
+    Attributes
+    ----------
+    ``properties`` 
+        A list of all paths stored (in properties).
+
+    Methods
+    -------
+    ``get()``
+        Get the path of a property-name.    
+
+    See Also
+    --------
+    ``EpiConfig``
+        The class to which ``EpiPathsManager`` is a helper class.
+    ``EpiValidator``
+        The class that validates the paths stored in ``EpiPathsManager`` by accessing
+        ``.properties``.
+
+    Downstream
+    ----------
+    ``EpiConfig`` stores all configuration information needed to transform raw data
+    into model-ready datasets by ``EpiDataOrchestrator``. ``EpiValidator`` validates the
+    input to ``EpiConfig``, as well as the paths that ``EpiPathsManager`` stores.
     """
     def __init__(self, 
-                 country: Country,
-                 level:   AdminLevel,
-                 disease: Disease):
+                 country : Country,
+                 level : AdminLevel,
+                 disease : Disease):
         
         self.properties = get_registered_properties(self.__class__)
         self.country    = country

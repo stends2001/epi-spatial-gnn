@@ -1,29 +1,47 @@
-from typing import TYPE_CHECKING, List, assert_never
-import pandas as pd
+from __future__ import annotations
+
+from typing import assert_never
 
 from .exceptions import EpiConfigLimitationError, EpiConfigValidationError
 from ...utils import ExceptionReport, PathNotFound
 
-if TYPE_CHECKING:
-    from .epiconfig import EpiConfig
+from .epiconfig import EpiConfig
 
 import logging
 logger = logging.getLogger(__name__)
 
 class EpiConfigValidator:
     """
-    This is a  Utility class of EpiConfig that deals with the validation of input.
-    Simply call `.validate()`. Warngings that do not thro exceptions may be printed.
-    Alternatively, an IssueReported may be returned.
+    This helper class of ``EpiConfig`` deals with the validation of input and the paths
+    stored in ``EpiPathsManager``. Simply call `.validate()`. Warnings and Exceptions 
+    will be returned as an ``ExceptionReport``; a nice formatted version of multiple 
+    exceptions.
+
+    Methods
+    -------
+    ``validate()``
+        Validates everything.
+
+    See Also
+    --------
+    ``ExceptionReport``
+        An easy-to-read alternative of GroupedException, that also works well in jupyter
+        notebooks.
+
+    Downstream
+    ----------
+    ``EpiConfig`` stores all configuration information needed to transform raw data
+    into model-ready datasets by ``EpiDataOrchestrator``. ``EpiValidator`` validates the
+    input to ``EpiConfig``, as well as the paths that ``EpiPathsManager`` stores.    
     """
 
     def __init__(self,
-                 epiconfig: 'EpiConfig'):
+                 epiconfig: EpiConfig):
         
         self.epiconfig = epiconfig 
 
     def validate(self):
-        exceptions: List[Exception] = []
+        exceptions: list[Exception] = []
         exceptions = self._datapaths(exceptions)
         exceptions = self._current_limitations(exceptions)      
         exceptions = self._input(exceptions)  
@@ -35,7 +53,7 @@ class EpiConfigValidator:
 
         logger.debug('EpiConfig has been validated')            
 
-    def _datapaths(self, exceptions: List[Exception]) -> List[Exception]:
+    def _datapaths(self, exceptions: list[Exception]) -> list[Exception]:
 
         for property in self.epiconfig.path_manager.properties:
 
@@ -46,7 +64,7 @@ class EpiConfigValidator:
 
         return exceptions        
     
-    def _current_limitations(self, exceptions: List[Exception]) -> List[Exception]:
+    def _current_limitations(self, exceptions: list[Exception]) -> list[Exception]:
         """
         Validates any issues in the initialization of an EpiConfig instance. 
         These represent CURRENT limitations, which are also things for me to develop further.
@@ -59,7 +77,7 @@ class EpiConfigValidator:
 
         return exceptions
     
-    def _input(self, exceptions: List[Exception]) -> List[Exception]:
+    def _input(self, exceptions: list[Exception]) -> list[Exception]:
         """
         Validates discrepancies in the initialization of an EpiConfig instance. These represent
         actual issues or errors, so an EpiConfigError is thrown suggesting to adjust the input.
