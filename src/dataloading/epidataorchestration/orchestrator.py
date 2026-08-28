@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Self
+
 from ..epiconfig import EpiConfig
 from ..columnregistration import ColumnRegistry
 
@@ -20,7 +24,7 @@ class EpiDataOrchestrator:
     """
     Main Orchestrator class: directs work to the children classes that do the heavy lifting
     """
-    def __init__(self, config: 'EpiConfig'):
+    def __init__(self, config: EpiConfig):
         self.config         = config
 
         # Initialize column registration
@@ -49,7 +53,7 @@ class EpiDataOrchestrator:
         self._data_normalized= None
         self._data_final     = None
           
-    def load(self) -> 'EpiDataOrchestrator':
+    def load(self) -> EpiDataOrchestrator:
         """Load raw data from files"""
         self.reader         = EpiDataReader(self.config)
         rawepidata          = self.reader.orchestrate()
@@ -61,7 +65,7 @@ class EpiDataOrchestrator:
     
     @classmethod
     def from_raw(cls, config: EpiConfig, 
-                data_raw: RawEpiData) -> 'EpiDataOrchestrator':
+                data_raw: RawEpiData) -> Self:
         """
         Bypass load_raw.
         Use when RawEpiData is already available (e.g. cross-validation).
@@ -70,7 +74,7 @@ class EpiDataOrchestrator:
         orch._data_raw = data_raw
         return orch
     
-    def harmonize(self) -> 'EpiDataOrchestrator':
+    def harmonize(self) -> Self:
         """Harmonize data on NUTS-level"""     
         self.harmonizer                             = EpiDataHarmonizer(self.config)   
         harmepidata, contextepidata                 = self.harmonizer.orchestrate(self.data_raw)
@@ -81,7 +85,7 @@ class EpiDataOrchestrator:
 
         return self    
 
-    def process(self) -> 'EpiDataOrchestrator':
+    def process(self) -> Self:
         """Preprocess the harmonized data"""
         self.processor = EpiDataProcessor(
             self.config, 
@@ -93,7 +97,7 @@ class EpiDataOrchestrator:
         ProcessedValidator(self.config, processed_data).validate()            
         return self
 
-    def build_features(self) -> 'EpiDataOrchestrator':
+    def build_features(self) -> Self:
         """build features. Note that this method adjusts self.column_registry."""
         self.feature_builder= EpiFeatureBuilder(self.config, self.column_registration, self.data_context.temporal_summary)
         feature_data        = self.feature_builder.orchestrate(self.data_processed)
@@ -102,7 +106,7 @@ class EpiDataOrchestrator:
         FeatureValidator(self.config, self.column_registration, feature_data).validate()          
         return self        
    
-    def normalize(self) -> 'EpiDataOrchestrator':
+    def normalize(self) -> Self:
         """normalize data"""
         self.normalizer = EpiDataTransformer(
             self.config, 
@@ -114,7 +118,7 @@ class EpiDataOrchestrator:
         TransformedValidator(self.config, self.column_registration, normalized_data).validate()
         return self      
 
-    def finalize(self) -> 'EpiDataOrchestrator':
+    def finalize(self) -> Self:
         """Finalize data."""
         self.finalizer      = EpiDataFinalizer(self.config, self.column_registration)
         final_data          = self.finalizer.orchestrate(self.data_normalized)
@@ -122,7 +126,7 @@ class EpiDataOrchestrator:
         FinalizedValidator(self.config, self.column_registration, self.data_raw, self.data_harmonized, final_data).validate()
         return self        
 
-    def build(self) -> 'EpiDataOrchestrator':
+    def build(self) -> Self:
         """Execute full pipeline and return final dataset."""
         return (self
             .load()
