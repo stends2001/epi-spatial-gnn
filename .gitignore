@@ -6,3 +6,7 @@ sbatch/
 data/
 notebooks/
 outcomes/
+documentation.md
+commits.md
+todos.md
+.vscode/
