@@ -15,47 +15,87 @@ logger = logging.getLogger(__name__)
 @dataclass 
 class GraphObject:
     """
-    Class that stores a graph structure
+    Class that stores a ``GraphStructure``, ``GraphConfig`` and a tokenization_map.
 
     Parameters
     -----------
-    graph: GraphStructure
-        the torch representation of graph
-    tokenization_map: Dict[str,int]
-        mapping of node-identifier (i.e. NUTS code) -> node idx
-    config: GraphConfig   
+    graph : GraphStructure
+        The pytorch representation of the graph (edge_index and edge_weight).
+    tokenization_map : Dict[str,int]
+        Mapping of node-identifier (i.e. NUTS code) -> token
+    config : GraphConfig   
         config-dataclass for the graph 
 
     One may also set a graph structure with lists  instead of torch.Tensors, using
     the classmethod `from_list()`. These are then directly converted into Tensors.
 
+    Methods
+    ``load()``
+        Load ``GraphObject`` from file.
+    ``save()``
+        Save ``GraphObject`` to file.
+
+    Attributes
+    ----------
+    ``reverse_tokenization_map``
+        Where ``tokenization_map`` is a dict[str, int] (key -> token), this returns
+        the opposite; dict[int, str]
+    
+    See Also
+    --------
+    ``GraphConfig``
+        A vital element of ``GraphObject``. Contains the description on how the 
+        ``GraphStructure`` was made.
+    ``GraphStructure``
+        A vital element of ``GraphObject``. The actual structure for the graph.
+    ``GraphRegistry``
+        An interactive registry of ``GraphObjects``.        
+
+    Downstream
+    ----------
+    ``GraphBuilder`` constructs ``GraphStructure``s. In order to keep them organized,
+    and reproducible, however, they wrap a ``GraphStructure`` in a ``GraphObject``,
+    which contains all information required to recreate the structure. These are
+    then saved into ``GraphRegistry``, which is an interactive registry of 
+    ``GraphObjects``.
+    
     Examples
     ---------
     >>> edges   = [(0,1), (1,0), (3,1)]
-    >>> graph   = GraphStructure.from_list(edges, [1, 1, 1], 4)    
-    >>> graphobj= GraphObject(graph, {'A': 0, 'B': 1, 'C': 2, 'D':3}, {})    
+    ... graph   = GraphStructure.from_list(edges, [1, 1, 1], 4)    
+    ... graphobj= GraphObject(graph, {'A': 0, 'B': 1, 'C': 2, 'D':3}, {})    
 
     """
     graph:              GraphStructure
     tokenization_map:   dict[str, int]   
     config:             GraphConfig
 
-    # these are class variables (has to be typed explicitly as ClassVar when in dataclasses)
-    edge_index_filename:            ClassVar[str] = 'edge_index.pt'
-    edge_weight_filename:           ClassVar[str] = 'edge_weight.pt'
-    graphconfig_filename:           ClassVar[str] = 'config.json'
-    tokenization_map_filename:      ClassVar[str] = 'tokenization_map.json'
+    # typed as ``ClassVar`` since it's a dataclass.
+    edge_index_filename: ClassVar[str] = 'edge_index.pt'
+    edge_weight_filename: ClassVar[str] = 'edge_weight.pt'
+    graphconfig_filename: ClassVar[str] = 'config.json'
+    tokenization_map_filename: ClassVar[str] = 'tokenization_map.json'
 
     def __post_init__(self):
         self._validate()
 
-    def save(self, path: str | Path):
+    def save(self, path: str | Path) -> None:
         """ 
-        Saves four things:
-        - graphconfig       => path / config.json
-        - edge-index        => path / edge_index.pt
-        - edge-weight       => path / edge_weight.pt
-        - tokenization_map  => path.parent / tokenization_map.json (only saves if doesn't exist yet!)
+        Saves a ``GraphObject`` into path, represented by four seperate files:
+        ``config.json``
+            ``config`` Attribute of ``GraphObject``.
+        ``edge_index.pt``
+            ``edge_index`` Attribute of ``GraphObject.graph``.
+        ``edge_weight.pt``
+            ``edge_weight`` Attribute of ``GraphObject.graph``.
+        ``tokenization_map.json``
+            ``tokenization_map`` Attribute of ``GraphObject``. NOTE: this file is only
+            saved in the parent of ``path``, and is only saved if it doesn't exist yet.
+
+        Parameters
+        ----------
+        path : str | Path
+            the path in which to save the ``GraphObject``.
         """
 
         if isinstance(path, str):
@@ -78,15 +118,11 @@ class GraphObject:
     @classmethod
     def load(cls, path: str | Path) -> Self:
         """
-        Loads an instance of itself based on supplied path.
-        That is, the graph-folder name containing the files:
-        - `config.json`
-        - `edge_index.pt`
-        - `edge_weight.pt`
+        Loads a graph structure into ``GraphObject`` based on supplied path. 
 
         Returns
         -------
-        An instance of GraphObject
+        ``GraphObject``
         """
         if isinstance(path, str):
             path = Path(path)
@@ -120,6 +156,7 @@ class GraphObject:
         return cls(graphstructure, tokenization_map, graphconfig)
 
     def _validate(self):
+        """Briefly validates ``GraphObject``"""
         num_expected_nodes = len(self.tokenization_map.values())
         
         if num_expected_nodes != self.graph.num_nodes:

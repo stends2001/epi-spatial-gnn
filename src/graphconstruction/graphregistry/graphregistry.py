@@ -13,40 +13,50 @@ class InvalidGraphName(Exception):
 
 class GraphRegistry:
     """
-    Registry of GraphObject instances: stores, saves and loads them.
+    Registry of ``GraphObject`` instances: stores, saves, loads and interacts with them.
 
     Parameters
     ----------
-    graph_partition_dir: str
-        partition-directory in which to save graphstructures from the registry.
-        That is, the path in which different graph representations of the same 
-        thing are stored (same country/level combination). These structures
-        have a shared `tokenization_map`.
+    ``graph_partition_dir`` : str
+        partition-directory in which to save graphstructures from the registry. That is,
+        the path in which different graph representations of the same thing are stored 
+        (same country/level combination). These structures have a shared 
+       ``tokenization_map``.
 
     Methods
     -------
-    - `add_entry()`
-    - `get_entry()`
-    - `rename_entry()`
-    - `remove_entry()`
-    - `save_entry()`
-    - `save_all_entries()`
-    - `load_entry()`
+    ``add_entry()``
+        Add a ``GraphObject`` to ``GraphRegistry``.
+    ``get_entry()``
+        Get a ``GraphObject`` from ``GraphRegistry``.    
+    ``rename_entry()``
+        Rename a ``GraphObject`` in ``GraphRegistry``.    
+    ``remove_entry()``
+        Remove a ``GraphObject`` from ``GraphRegistry``.      
+    ``save_entry()``
+        Save a ``GraphObject`` from ``GraphRegistry`` in ``graph_partition_dir``.      
+    ``save_all_entries()``
+        Save all ``GraphObject``s from ``GraphRegistry`` in ``graph_partition_dir``.          
+    ``load_entry()``
+        Load a saved ``GraphObject`` into ``GraphRegistry``.    
 
     Attributes
     ----------
-    - `entry_names`
+    ``entry_names``
+        List of names of all ``GraphObject``s in ``GraphRegistry``.
 
     See Also
     --------
-    - GraphObject
-    - GraphConfig
-    - GraphStrucure
+    ``GraphObject``
+        The class in which graphs are wrapped.
+    ``GraphStrucure``
+        The ``graph`` attribute of ``GrahObject``.
 
     Downstream Use
     ---------------
-    GraphManager
-        Each instance of GraphManager has a registry as attribute.
+    Each instance of ``GraphManager`` has a registry as attribute. These create new
+    graph structures, wraps them in ``GraphObject``s, and stores these into 
+    ``GraphRegistry``.
     """
     def __init__(self, graph_partition_dir: str | Path):
         self._registry: dict[str, GraphObject]= {}

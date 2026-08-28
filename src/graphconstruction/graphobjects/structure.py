@@ -7,34 +7,45 @@ from ..exceptions import InvalidGraphStructure
 @dataclass 
 class GraphStructure:
     """ 
-    Graph Structure class
+    Graph Structure class; the pytorch representation of a graph.
 
     Parameters
     -----------
-    edge_index:     torch.Tensor [2, num_edges]
-        list-wise-representation of edge index
-    edge_weight:    torch.Tensor [num_edges]
-        list-wise-representation of edge weights
-    num_nodes:  int
-        number of nodes represented in the graph
+    ``edge_index`` : torch.Tensor
+        Tensor object depicting which nodes are connected (shape: [2, num_edges])
+    ``edge_weight`` : torch.Tensor
+        Tensor object depicting the weight of edges (shape: [num_edges])
+    ``num_nodes`` : int
+        Number of nodes represented in the graph. This should include also isolated
+        nodes that would not show up in ``edge_index``.
 
     Attributes
     -----------
-    - `num_edges`
-    - `adjacency_matrix`
-    - `edge_index_list`
-    - `edge_weight_list`
-    - `density`
-    - `mean_degree`
+    ``num_edges``
+        Number of edges in the graph.
+    ``adjacency_matrix``
+        Adjacency matrix: nodes in rows and columns, with value of associated 
+        edge-weight.
+    ``edge_index_list``
+        List representation of ``edge_index``.
+    ``edge_weight_list``
+        List representation of ``edge_weight``.
+    ``density``
+        Proportion of all possible connections that exist:
+        num_edges / (num_nodes * (num_nodes - 1))
+    ``mean_degree``
+        Average number of connections per node:
+        num_edges / num_nodes
 
-    Downstream use
-    ---------------
-    - GraphObject
+    Downstream
+    ----------
+    While this is ultimately the graph that GNNs work with, these are not worked with
+    in unison. ``GraphStructure``s are wrapped in ``GraphObject``s.
 
     Examples
     ---------
     >>> edges   = [(0,1), (1,0), (3,1)]
-    >>> graph   = GraphStructure.from_list(edges, [1, 1, 1], 4)
+    ... graph   = GraphStructure.from_list(edges, [1, 1, 1], 4)
     """
     edge_index:     torch.Tensor
     edge_weight:    torch.Tensor 

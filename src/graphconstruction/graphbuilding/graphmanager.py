@@ -21,48 +21,65 @@ class InvalidPreviewInput(Exception):
 
 class GraphManager:
     """
-    Main class used to construct graphs. The heavy lifting is outsourced to 'delegation classes'.
-    Note that each instance of GraphManager is associated with a single combination of country and level.
+    Main class used to construct graphs. The heavy lifting is outsourced to utitlity 
+    classes. Note that each instance of GraphManager is associated with a single 
+    combination of country and level.
     
     Parameters
     ----------
-    country: Country
-        country represented by the graph structure(s) to be created
-        Country = Literal['germany', 'hungary']        
-    level: Level
-        level of the country represented by the graph structure(s) to be created
-        Level = Literal['nuts1', 'nuts2', 'nuts3']
-    id_col: str = 'key
-        the column name in which the code of each spatial unit is stored. These are the ones that will be 
-        mapped to node-idx (tokens) alphabetically, the mapping of which will be stored in the overarching
-        directory (self.dir_graphs_partition) under tokenization_map.json
+    country : Country
+        country represented by the graph structure(s) to be created.      
+    level : Level
+        level of the country represented by the graph structure(s) to be created.
+    id_col : str = 'key
+        The column name in which the code of each spatial unit is stored. These are the
+        ones that will be mapped to node-idx (tokens) alphabetically, the mapping of 
+        which will be stored in the overarching directory (``dir_graphs_partition``) 
+        under ``tokenization_map.json``.
     token_col: str = 'node'
-        the column name in which the tokens of the `id_col` will be stored
+        The column name in which the tokens of the ``id_col`` will be stored.
 
     Attributes
     ----------
-    - `graph_registry`
-    - `num_nodes`
-    - `tokenization_map`
+    ``graph_registry``
+        ``GraphRegistry`` associated with ``GraphManager``.
+    ``num_nodes``
+        The number of nodes at this combination of ``level``/``country``.
+    ``tokenization_map``
+        The mapping for key -> token.
 
     See Also
     --------
-    #### Delegation classes
-    - GraphContextDataProcessor
-    - GraphBuilder
-    - GraphPostProcessor
-    - GraphViewer
-
-    #### Others
-    - PathManager
-    - GraphRegistry
+    ``GraphContextDataProcessor``
+        Utility class of ``GraphManager`` that deals with the context of a graph 
+        structure.
+    ``GraphBuilder``
+        Utility class of ``GraphManager`` that deals with the creation of a raw graph
+        structure.
+    ``GraphPostProcessor``
+        Utility class of ``GraphManager`` that deals with the processing of a raw
+        graph structure.
+    ``GraphViewer``
+        Utility class of ``GraphManager`` that deals with the previewing of graphs.
+    ``GraphObject``
+        Single graph created by ``GraphManager``.
+    ``GraphRegistry``
+        Registry in which ``GraphObject``s are stored.
+    ``PathManager``
+        Deals with project-wide path-management.        
+        
+    Downstream
+    ----------
+    ``GraphManager`` may create a range of ``GraphObject``s through its utility classes
+    for the specific combination of ``country``/``level``. These are stored in 
+    ``GraphRegistry`` and may be saved, to be later loaded and used by 
+    ``GraphDataBuilder`` for GNNs.
     """
     def __init__(self,                  
-                 country:           Country,
-                 level:             AdminLevel,
-                 
-                 id_col:            str = 'key',
-                 token_col:         str = 'node'):
+                 country : Country,
+                 level : AdminLevel,
+                 id_col : str = 'key',
+                 token_col : str = 'node'):
 
         self.id_col             = id_col 
         self.token_col          = token_col   
@@ -102,24 +119,39 @@ class GraphManager:
                         top_k: dict[str,Any] | None = None, 
                         *args, **kwargs) -> None:
         """
-        Main function of the class. Creates and processes a graph strucutre, 
-        which is saved in self.graph_registry
+        Main function of the class. Creates a raw ``GraphStructure`` which is processed
+        and saved into a ``GraphObject``. The information needed to repeat the creation 
+        is stored in ``GraphConfig``, also saved in ``GraphObject``. This 
+        ``GraphObject`` is then stored in ``graph_registry``.
 
         Parameters
         ----------
-        graph_name: str
-            the name under which graph has been saved
+        graph_name : str
+            The name under which graph wil be saved.
         graph_type: GraphType
-            the type of graph. The following are supported: 
-            GraphType = Literal['identity', 'geographical_contiguity', 'gravity_model', 'random', 'fully_connected']
+            the type of graph. Types supported are: 
+            - ``'identity'``
+            - ``'geographical_contiguity'``
+            - ``'gravity_model'``
+            - ``'random'``
+            - ``'fully_connected'``
+        num_nodes: int    
+            number of nodes in the relevant graph structure (also counting isolated nodes 
+            that don't show up in edge_index!)
         normalization_method: GraphNormType
-            method used to normalize edge_weights. the following are supported:
-            GraphNormType = Literal['minmax', 'symmetric', 'rowwise']
-        top_k: Optional[Dict[str,Any]]  
-            top-k arguments. Optional, may therefore be None, or a dictionary with keys 'k': int and 'mode': Literal['local','global']
-        args: List[Any]
-            any other arguments (`seed` for graph_type == 'random')
+            method used to normalize edge_weights. Methods supported are:
+            - ``'minmax'``
+            - ``'symmetric'``
+            - ``'rowwise'``
+        top_k: TopKConfig | None 
+            The top-k arguments. Optional, may therefore be None, or an instance of 
+            ``TopKConfig``.
+        args: list[Any]
+            Some specific methods require certain arguments. when ``graph_type`` == 
+            ``'random'``, for example, argument ``seed`` is espected. 
         kwargs: Dict[str, Any]
+            Some specific methods require certain arguments. when ``graph_type`` == 
+            ``'random'``, for example, argument ``seed`` is espected. 
         """
         topk_cfg = None if top_k is None else TopKConfig(**top_k)
 
@@ -172,7 +204,10 @@ class GraphManager:
                            top_k: TopKConfig | None,
                            *args: list[Any],
                            **kwargs: dict[str, Any]) -> GraphConfig:
-        """builds and returns an instance of GraphConfig based on input from `construct_graph()`"""
+        """
+        Builds and returns an instance of GraphConfig based on input from 
+        ``construct_graph()``.
+        """
         
         return GraphConfig(
             graph_name, 

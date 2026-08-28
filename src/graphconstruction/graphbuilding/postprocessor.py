@@ -9,18 +9,23 @@ import logging
 logger = logging.getLogger(__name__)
 
 class GraphPostProcessor:
-    """
-    Delegation - class to GraphManager, responsible for the processing of Graphs through:
-    - (optional) top_k - filtering
+    """ 
+    Utiliy - class to ``GraphManager``, responsible for the processing of graphs by
+    - (optional) top-k - filtering
     - edge-weight normalization
 
-    main method to be called is `normalize()`
-    normalization-methods are stored in methods-registry (`.methods`).
+    The main orchestration method that calls the others is ``normalize()``.
+      
+    Attributes
+    ----------
+    ``methods``
+        Stores a list of supported normalization-methods        
 
     See Also
     --------
-    for more information, see GraphManager
+    For more information, see ``GraphManager``.
     """
+
     def __init__(self):
         self.methods     = get_registered_methods(self.__class__)
 
@@ -87,19 +92,26 @@ class GraphPostProcessor:
 
     def normalize(self, graph_structure: GraphStructure, method: GraphNormType, *args, **kwargs) -> GraphStructure:
         """ 
-        Normalizes edge-weights according to method. Specific methods may require *args or **kwargs
-        Returns a GraphStructure with normalized edge-weight and unchanged edge-index.    
+        Normalizes edge-weights according to method. Specific methods may require 
+        *args or **kwargs.    
 
         Parameters
         ----------
-        graph_structure: GraphStructure
-            the graph structure to be normalized
-        method: GraphNormType
-            the method with which to normalize the edge weights    
+        graph_structure : GraphStructure
+            The graph structure to be normalized.
+        method:  GraphNormType
+            The method with which to normalize the edge weights.
+
+        Returns
+        -------
+        ``GraphStructure``
+            This a full-blown, normalized graph structure.            
 
         See Also
         --------
-        for more information on what parameters are required per method, please see
+        For more information, see ``GraphManager``.
+
+        For more information on what parameters are required per method, please see
         the documentation for that method.
         """        
         if method not in self.methods:

@@ -8,33 +8,34 @@ import logging
 logger = logging.getLogger(__name__)
 
 class GraphContextDataProcessor:
-    """
-    Delegation - class to GraphManager, responsible for the loading/preprocessing of data:
-
-    main method to be called is `process()`
+    """ 
+    Utiliy - class to ``GraphManager``, responsible for the loading and preprocessing of
+     context data for the GraphStructure. The main orchestration method that calls the 
+     others is ``process()``.
 
     Parameters
     ----------
-    level: AdminLevel
-    id_col: str
-    token_col: str
-    country_data_path: Path
-
+    level : Level
+        level of the country represented by the graph structure(s) to be created.      
+    id_col : str
+        The column name in which the code of each spatial unit is stored. These are the
+        ones that will be mapped to node-idx (tokens) alphabetically, the mapping of 
+        which will be stored in the overarching directory (``dir_graphs_partition``) 
+        under ``tokenization_map.json``.    
+    token_col : str
+        The column name in which the tokens of the ``id_col`` will be stored.    
+    country_path : Path   
+        The path in which the data for this country can be found.
+      
     See Also
     --------
-    for more information, see GraphManager
-
-    NOTE
-    ----
-    commuting data has been removed.
-    TODO
-        popsize filter on 2020 -> dynamic
+    for more information, see ``GraphManager``.
     """
     def __init__(self,
-                 level:             AdminLevel,
-                 id_col:            str,
-                 token_col:         str,
-                 country_data_path: Path
+                 level: AdminLevel,
+                 id_col : str,
+                 token_col : str,
+                 country_data_path : Path
                  ):
         
         self.id_col             = id_col 

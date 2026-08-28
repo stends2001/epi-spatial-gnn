@@ -13,28 +13,38 @@ logger = logging.getLogger(__name__)
 
 class GraphBuilder:
     """ 
-    Delegation - class to GraphManager, responsible for the buidling the raw graph
-    Raw as in, the graph is normalized later. Raw graphs are returned as lists.
-
-    main method to be called is `build()`
-    normalization-methods are stored in methods-registry (`.methods`).    
+    Utiliy - class to ``GraphManager``, responsible for the buidling the raw graph.
+    These raw graphs may be processed later. Raw graphs are returned as lists, not 
+    tensors. The main orchestration method that calls the others is ``build()``.
 
     Parameters
     ----------
-    id_col: str
-    token_col: str
-    shape_data: gpd.GeoDataFrame
-    population_data: pd.DataFrame
+    id_col : str
+        The column name in which the code of each spatial unit is stored. These are the
+        ones that will be mapped to node-idx (tokens) alphabetically, the mapping of 
+        which will be stored in the overarching directory (``dir_graphs_partition``) 
+        under ``tokenization_map.json``.    
+    token_col : str
+        The column name in which the tokens of the ``id_col`` will be stored.    
+    shape_data : gpd.GeoDataFrame
+        The shape data of the country at all levels.
+    population_data : pd.DataFrame
+        The population data of the country at all levels.
+
+    Attributes
+    ----------
+    ``methods``
+        Stores a list of supported building-methods.
 
     See Also
     --------
-    for more information, see GraphManager
+    for more information, see ``GraphManager``.
     """
     def __init__(self,
-                 id_col:            str,
-                 token_col:         str,                 
-                 shape_data:        gpd.GeoDataFrame,
-                 population_data:   pd.DataFrame
+                 id_col : str,
+                 token_col : str,                 
+                 shape_data : gpd.GeoDataFrame,
+                 population_data : pd.DataFrame
                  ):
         
         self.id_col     = id_col 
@@ -47,11 +57,12 @@ class GraphBuilder:
 
     def build(self, method: GraphType, *args, **kwargs) -> tuple[list[tuple[int, int]], list[float]]:
         """
-        buidls edge-index and edge-weights according to method. Specific methods may require *args or **kwargs 
+        buidls edge-index and edge-weights according to method. Specific methods may 
+        require *args or **kwargs.
 
         Parameters
         ----------
-        method: GraphType
+        method : GraphType
             the method with which to generate the edge indices and edge weights    
 
         See Also
@@ -61,9 +72,10 @@ class GraphBuilder:
 
         Returns
         -------
-        edge_index: List[tuple[int,int]]
-    
-        edge_weight: List[float]
+        ``edge_index``: List[tuple[int,int]]
+            List representation of edges.
+        ``edge_weight``: List[float]
+            List representation of the weights associated with the edges.
         """
         if method not in self.methods:
             raise MethodNotInRegistry(method, list(self.methods))
@@ -87,8 +99,8 @@ class GraphBuilder:
     @registry_method
     def geographical_contiguity(self) -> tuple[list[tuple[int, int]], list[float]]:
         """
-        Build a geographical neighbors graph; each node is connected to its geographical neighbors only.
-        No parameters required.
+        Build a geographical neighbors graph; each node is connected to its 
+        geographical neighbors only. No parameters required.
         """        
         neighbors   = gpd.sjoin(self.shp_data, self.shp_data, how='inner', predicate='touches').reset_index(drop=False)
         neighbors   = neighbors[neighbors[f'{self.token_col}_left'] != neighbors[f'{self.token_col}_right']]
@@ -107,21 +119,25 @@ class GraphBuilder:
                       decay:             float = 1.0,
                       max_distance:      float = 100_000) -> tuple[list[tuple[int, int]], list[float]]:
         """
-        Build a gravity-model based graph: connection strength depends on distance and population size.
+        Build a gravity-model based graph: connection strength depends on distance and 
+        population size.
 
         The Gravity formula is as follows:
-        edge_weight_{i,j} = pop_i * pop_j / ((distance * decay) ** alpha + epsilon) if distance < max_distance else 0
+            edge_weight_{i,j} = pop_i * pop_j / ((distance * decay) ** alpha + epsilon) 
+            
+            if distance < max_distance else 0
 
         Parameters
         ----------
-        alpha: float = 2
-            distance exponent
-        epsilon: float = 1e-6
-            numerical stability factor (prevents division by 0)
-        decay:  float = 1.0
-            higher means stronger decay with distance
-        max_distance: float = 100_000
-            maximum distance between two nodes within which they may still be connected (in m! not in km)
+        alpha : float = 2
+            Distance exponent.
+        epsilon : float = 1e-6
+            Numerical stability factor (prevents division by 0).
+        decay :  float = 1.0
+            Higher means stronger decay with distance.
+        max_distance : float = 100_000
+            Maximum distance between two nodes within which they may still be connected 
+            (in m! not in km).
         """
         gdfc             = self.shp_data[[self.token_col, "geometry"]].sort_values(self.token_col).reset_index(drop=True)
         population_data  = self.pop_data.sort_values(self.token_col).reset_index(drop=True)
@@ -160,9 +176,9 @@ class GraphBuilder:
 
         Parameters
         ----------
-        seed: int = 42
+        seed : int = 42
             random seed
-        k: int = 5
+        k : int = 5
             target average degree per node
         """
         rng      = np.random.default_rng(seed)
@@ -190,8 +206,8 @@ class GraphBuilder:
     @registry_method    
     def fully_connected(self) -> tuple[list[tuple[int, int]], list[float]]:
         """
-        Build a fully connected graph where each node is connected to all other nodes with weight 1.
-        NOTE: such a graph is computationally expensive!
+        Build a fully connected graph where each node is connected to all other nodes 
+        with weight 1. NOTE: such a graph is computationally expensive!
         """
         node_ids = list(self.shp_data[self.token_col].unique())
 

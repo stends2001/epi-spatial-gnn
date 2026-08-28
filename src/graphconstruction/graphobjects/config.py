@@ -10,10 +10,23 @@ class InvalidTopKConfig(Exception):
 
 @dataclass(frozen=True)
 class TopKConfig:
-    """Simple dataclass for top_k configuration. Downstream use in GraphConfig"""
+    """
+    Simple dataclass for top_k configuration. 
 
-    k: int
-    mode: Literal["global", "local"]
+    Parameters
+    ----------
+    k : int
+        The limited (maximum) number of connections 
+    mode : Literal['local', 'global']
+        Whether this limit is to be used node-wise or for the entire graph structure.
+    
+    Downstream
+    ----------
+    When relevant ``TopKConfig``, stored in ``GraphConfig`` for making graphstructure-
+    construction reproducible.
+    """
+    k : int
+    mode : Literal["global", "local"]
 
     def __post_init__(self):
         if self.k < 1:
@@ -27,35 +40,50 @@ class TopKConfig:
 @dataclass 
 class GraphConfig:
     """
-    Config class containing info on how the graph was generated
+    Config class containing inforomation on how the graph was generated.
 
     Parameters
     ----------
-    graph_name: str
-        the name under which graph has been saved
+    graph_name : str
+        the name under which graph has been saved in.
     graph_type: GraphType
-        the type of graph. The following are supported: 
-        GraphType = Literal['identity', 'geographical_contiguity', 'gravity_model', 'random', 'fully_connected']
+        the type of graph. Types supported are: 
+        - ``'identity'``
+        - ``'geographical_contiguity'``
+        - ``'gravity_model'``
+        - ``'random'``
+        - ``'fully_connected'``
     num_nodes: int    
-        number of nodes in the relevant graph structure (also counting isolated nodes that don't show up in edge_index!)
+        number of nodes in the relevant graph structure (also counting isolated nodes 
+        that don't show up in edge_index!)
     normalization_method: GraphNormType
-        method used to normalize edge_weights. the following are supported:
-        GraphNormType = Literal['minmax', 'symmetric', 'rowwise']
-    top_k: Optional[TopKConfig]  
-        top-k arguments. Optional, may therefore be None, or an instance of TopKConfig
-    args: List[Any]
-        any other arguments (`seed` for graph_type == 'random')
+        method used to normalize edge_weights. Methods supported are:
+        - ``'minmax'``
+        - ``'symmetric'``
+        - ``'rowwise'``
+    top_k: TopKConfig | None 
+        The top-k arguments. Optional, may therefore be None, or an instance of 
+        ``TopKConfig``.
+    args: list[Any]
+        Some specific methods require certain arguments. when ``graph_type`` == 
+        ``'random'``, for example, argument ``seed`` is espected. 
     kwargs: Dict[str, Any]
+        Some specific methods require certain arguments. when ``graph_type`` == 
+        ``'random'``, for example, argument ``seed`` is espected. 
 
     Methods
     -------
-    - `asdict()`
-    - `fromdict()` (classmethod)
+    ``asdict()``
+        Returns a config (`.yaml`-ready) file representation of itself. This is the 
+        antithesis of ``fromdict()``.
+    ``fromdict()``
+        This class method returns an instance of ``GraphConfig`` based on a dictionary
+        of argumetns. This is the antithesis of ``asdict()``.
 
     Downstream Use
     --------------
-    GraphObject
-        contains GraphStructure and an instance of GraphConfig
+    Each graph object ``GraphObject`` contains ``GraphStructure`` and an instance of 
+    ``GraphConfig``.
     """
     
     graph_name: str     
