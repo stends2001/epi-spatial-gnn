@@ -1,4 +1,3 @@
-from typing import List
 import pandas as pd 
 
 from .base import EpiDataContainerValidator
@@ -8,29 +7,32 @@ from ...epiconfig import EpiConfig
 
 class HarmonizedValidator(EpiDataContainerValidator):
     """ 
-    Validates HarmonizedEpiData. 
+    Validates ``HarmonizedEpiData``. Validates that attributes given are of allowed type,
+    and that they are not empty. Also validates there's no NaNs, and that expected
+    columns are present.
 
-    Validates that attribute are of allowed type,
-    non-emtpy -> parent methods.
-
-    Further validates that equired columns are present
-    and validates the tokenization process.
+    Parameters
+    ----------
+    epiconfig : EpiConfig
+        Large configuration class that dictates which data to load.            
+    harmonziedepidata : HarmonizedEpiData
+        Data class container for harmonized data to be validated.
 
     See Also
     --------
     For more information, please see the Parent class:
-    EpiDataContainerValidator    
+    ``EpiDataContainerValidator``   
     """
 
     def __init__(self,
-                 epiconfig:         EpiConfig,
-                 harmonziedepidata: HarmonizedEpiData):
+                 epiconfig : EpiConfig,
+                 harmonziedepidata : HarmonizedEpiData):
 
         super().__init__(epiconfig, 
                          dataclass_validated='HarmonizedEpiData')
 
         self.harmonziedepidata= harmonziedepidata
-        self.required_col     = self.epiconfig.id_column
+        self.required_col = self.epiconfig.id_column
 
     def validate(self):
         attrs           = self._get_expected_attributes()
@@ -76,7 +78,7 @@ class HarmonizedValidator(EpiDataContainerValidator):
         if len(missing_values) > 0 or len(leftover_values) > 0:
             raise InvalidTokenizationError(attribute_name, self.dataclass_validated, missing_values, leftover_values)
 
-    def _get_expected_attributes(self) -> List[str]:
+    def _get_expected_attributes(self) -> list[str]:
         """returns a list of strings with expected attributes"""
         # these are mandatory
         expected_attributes = ['epidata']

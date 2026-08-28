@@ -46,6 +46,16 @@ class EpiDataTemporalSummary:
     num_lags : int
     sequence_length : int
 
+    Methods
+    -------
+    ``get_extended_dates()``
+        Get the extended minimum and maximal dates to filter the raw data on.
+    ``get_input_splits()``
+    ``get_target_splits()``
+    ``get_daterange_dataset()``
+    ``minimal_summary()``
+        User-friendly representation of ``EpiDataTemporalSummary``.
+
     See Also
     --------
     ``EpiDataOrchestrator``
@@ -134,7 +144,12 @@ class EpiDataTemporalSummary:
 
     # ======= GETTER METHODs ====== #
     def get_extended_dates(self) -> dict[str, pd.Timestamp]:
-        """Get extended min/max dates for initial data loading"""
+        """
+        Get the extended minimum and maximal dates to filter the raw data on.
+        These account for the horizon and the number of lags, in such a way that both 
+        the first date and the final date chosen occur as the first date in in the 
+        training and the final date in the testing data, respectively.
+        """
         return {
             'min': pd.Timestamp(self.min_date_extended),
             'max': pd.Timestamp(self.max_date_extended)

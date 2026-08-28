@@ -1,5 +1,4 @@
-from typing import List
-import pandas as pd 
+from __future__ import annotations
 
 from .base import EpiDataContainerValidator
 from ..containers import ContextEpiData
@@ -7,20 +6,24 @@ from ...epiconfig import EpiConfig
 
 class ContextValidator(EpiDataContainerValidator):
     """ 
-    Validates ContextEpiData. 
+    Validates ``ContextEpiData``. Validates that attributes given are of allowed type,
+    and that they are not empty.
 
-    Validates that attribute are of allowed type,
-    non-emtpy -> parent methods.
+    Parameters
+    ----------
+    epiconfig : EpiConfig
+        Large configuration class that dictates which data to load.            
+    contextepidata : ContextEpiData
+        Data class container for context data to be validated.
 
     See Also
     --------
     For more information, please see the Parent class:
-    EpiDataContainerValidator
+    ``EpiDataContainerValidator``   
     """
-
     def __init__(self,
-                 epiconfig:  'EpiConfig',
-                 contextepidata: 'ContextEpiData'):
+                 epiconfig : EpiConfig,
+                 contextepidata : ContextEpiData):
 
         super().__init__(epiconfig, 
                          dataclass_validated='ContextEpiData')
@@ -42,8 +45,13 @@ class ContextValidator(EpiDataContainerValidator):
             # validate the size 
             self._validate_length_nonzero(attr_name, stored_attribute)
 
-    def _get_expected_attributes(self) -> List[str]:
+    def _get_expected_attributes(self) -> list[str]:
         """returns a list of strings with expected attributes"""
         # these are mandatory
-        expected_attributes = ['global_shapedata','local_shapedata','population_size','nodenames','region_harmonization','tokenization_map']
+        expected_attributes = ['global_shapedata',
+                               'local_shapedata',
+                               'population_size',
+                               'nodenames',
+                               'region_harmonization',
+                               'tokenization_map']
         return expected_attributes

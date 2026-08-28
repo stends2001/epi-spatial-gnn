@@ -1,4 +1,4 @@
-from typing import List, assert_never
+from typing import assert_never
 import pandas as pd 
 
 from .base import EpiDataContainerValidator
@@ -9,24 +9,30 @@ from ...epiconfig import EpiConfig
 
 class TransformedValidator(EpiDataContainerValidator):
     """ 
-    Validates TransformedEpiData. 
+    Validates ``TransformedEpiData``. Validates that attributes given are of allowed 
+    type, and that they are not empty. Also validates that expected columns are present,
+    no NaNs present, and that the normalization process went well (goes over 
+    normalization parameters).
 
-    Validates that attribute are of allowed type,
-    non-emtpy -> parent methods.
-
-    Further validates that required columns are presents,
-    there's no NaNs and the normalization process. It checks
-    the parameters for zscore or for minmax.
+    Parameters
+    ----------
+    epiconfig : EpiConfig
+        Large configuration class that dictates which data to load.    
+    column_registration : ColumnRegistry
+        Registry of columns that keeps track of all columns and transformations.                   
+    normalizedepidata : TransformedEpiData
+        Data class container for transformed data to be validated.      
 
     See Also
     --------
     For more information, please see the Parent class:
-    EpiDataContainerValidator
-    """
+    ``EpiDataContainerValidator``   
+    """ 
+    
     def __init__(self,
-                 epiconfig:         EpiConfig,
-                 column_registry:   ColumnRegistry,                 
-                 normalizedepidata: TransformedEpiData):
+                 epiconfig : EpiConfig,
+                 column_registry : ColumnRegistry,                 
+                 normalizedepidata : TransformedEpiData):
 
         super().__init__(epiconfig, 
                          dataclass_validated='TransformedEpiData')
@@ -131,7 +137,7 @@ class TransformedValidator(EpiDataContainerValidator):
         if nan_columns:     
             NaNsFoundError(attribute_name, self.dataclass_validated, nan_columns)
         
-    def _get_expected_attributes(self) -> List[str]:
+    def _get_expected_attributes(self) -> list[str]:
         """returns a list of strings with expected attributes"""
         # these are mandatory
         expected_attributes = ['data']       

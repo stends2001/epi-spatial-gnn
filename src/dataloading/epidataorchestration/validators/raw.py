@@ -1,4 +1,3 @@
-from typing import List, Dict, Any
 import pandas as pd 
 
 from .base import EpiDataContainerValidator
@@ -8,22 +7,25 @@ from ...epiconfig.epiconfig import EpiConfig
 
 class RawValidator(EpiDataContainerValidator):
     """ 
-    Validates RawEpiData. 
+    Validates ``RawEpiData``. Validates that attributes given are of allowed type,
+    and that they are not empty. Also validates that expected columns are present.
 
-    Validates that attribute are of allowed type,
-    non-emtpy -> parent methods.
-
-    Further validates that required columns are presents
-
+    Parameters
+    ----------
+    epiconfig : EpiConfig
+        Large configuration class that dictates which data to load.            
+    rawepidata : RawEpiData
+        Data class container for raw data to be validated.    
+    
     See Also
     --------
     For more information, please see the Parent class:
-    EpiDataContainerValidator
-    """
+    ``EpiDataContainerValidator``   
+    """    
 
     def __init__(self,
-                 epiconfig:  EpiConfig,
-                 rawepidata: RawEpiData):
+                 epiconfig : EpiConfig,
+                 rawepidata : RawEpiData):
 
         super().__init__(epiconfig, 
                          dataclass_validated='RawEpiData')
@@ -54,7 +56,7 @@ class RawValidator(EpiDataContainerValidator):
             if col not in stored_attribute:
                 raise MissingColumnError(attribute_name, col, self.dataclass_validated)        
 
-    def _get_expected_attributes(self) -> List[str]:
+    def _get_expected_attributes(self) -> list[str]:
         """returns a list of strings with expected attributes"""
         # these are mandatory
         expected_attributes = ['disease','population_size','shapedata','region_harmonization','tokenization_map']

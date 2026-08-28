@@ -1,6 +1,4 @@
-from typing import List
 import pandas as pd 
-
 from .base import EpiDataContainerValidator
 from .exceptions import MissingColumnError, NaNsFoundError
 from ..containers import FeatureEpiData
@@ -9,31 +7,36 @@ from ...columnregistration import ColumnRegistry
 
 class FeatureValidator(EpiDataContainerValidator):
     """ 
-    Validates FeatureEpiData. 
+    Validates ``FeatureEpiData``. Validates that attributes given are of allowed type,
+    and that they are not empty. Also validates there's no NaNs, and that expected
+    columns are present.
 
-    Validates that attribute are of allowed type,
-    non-emtpy -> parent methods.
-
-    Further validates that there's no NaNs and that
-    required columns are present.
-
+    Parameters
+    ----------
+    epiconfig : EpiConfig
+        Large configuration class that dictates which data to load.    
+    column_registration : ColumnRegistry
+        Registry of columns that keeps track of all columns and transformations.                
+    featureepidata : FeatureEpiData
+        Data class container for feature data to be validated.
+    
     See Also
     --------
     For more information, please see the Parent class:
-    EpiDataContainerValidator    
+    ``EpiDataContainerValidator``   
     """
 
     def __init__(self,
-                 epiconfig:         EpiConfig,
-                 column_registry:   ColumnRegistry,
-                 featureepidata:    FeatureEpiData):
+                 epiconfig : EpiConfig,
+                 column_registry : ColumnRegistry,
+                 featureepidata : FeatureEpiData):
 
         super().__init__(epiconfig, 
                          dataclass_validated='FeatureEpiData')
 
-        self.featureepidata  = featureepidata
+        self.featureepidata = featureepidata
         self.column_registry = column_registry
-        self.required_cols   = self.column_registry.context_columns + self.column_registry.target_columns + self.column_registry.feature_columns
+        self.required_cols = self.column_registry.context_columns + self.column_registry.target_columns + self.column_registry.feature_columns
 
     def validate(self):
         attrs           = self._get_expected_attributes()
@@ -73,7 +76,7 @@ class FeatureValidator(EpiDataContainerValidator):
             if col not in stored_attribute:
                 raise MissingColumnError(attribute_name, col, self.dataclass_validated)        
         
-    def _get_expected_attributes(self) -> List[str]:
+    def _get_expected_attributes(self) -> list[str]:
         """returns a list of strings with expected attributes"""
         # these are mandatory
         expected_attributes = ['data']       

@@ -1,4 +1,3 @@
-from typing import List
 import pandas as pd 
 
 from .base import EpiDataContainerValidator
@@ -8,29 +7,32 @@ from ...epiconfig import EpiConfig
 
 class ProcessedValidator(EpiDataContainerValidator):
     """ 
-    Validates ProcessedEpiData. 
+    Validates ``ProcessedEpiData``. Validates that attributes given are of allowed type,
+    and that they are not empty. Also validates there's no NaNs, and that expected
+    columns are present.
 
-    Validates that attribute are of allowed type,
-    non-emtpy -> parent methods.
-
-    Further validates that required columns are presents
-    and that there's no NaNs.
+    Parameters
+    ----------
+    epiconfig : EpiConfig
+        Large configuration class that dictates which data to load.            
+    processedepidata : ProcessedEpiData
+        Data class container for processed data to be validated.
 
     See Also
     --------
     For more information, please see the Parent class:
-    EpiDataContainerValidator
-    """
+    ``EpiDataContainerValidator``   
+    """    
 
     def __init__(self,
-                 epiconfig:         EpiConfig,
-                 processedepidata:  ProcessedEpiData):
+                 epiconfig : EpiConfig,
+                 processedepidata : ProcessedEpiData):
         
         super().__init__(epiconfig, 
                          dataclass_validated='ProcessedEpiData')
 
         self.processedepidata= processedepidata
-        self.col             = self.epiconfig.id_column
+        self.col = self.epiconfig.id_column
 
     def validate(self):
         attrs           = self._get_expected_attributes()
@@ -67,7 +69,7 @@ class ProcessedValidator(EpiDataContainerValidator):
         if nan_columns:     
             NaNsFoundError(attribute_name, self.dataclass_validated, nan_columns)
         
-    def _get_expected_attributes(self) -> List[str]:
+    def _get_expected_attributes(self) -> list[str]:
         """returns a list of strings with expected attributes"""
         # these are mandatory
         expected_attributes = ['epidata']

@@ -13,26 +13,27 @@ from ...columnregistration import ColumnRegistry
 
 class FinalizedValidator(EpiDataContainerValidator):
     """ 
-    Validates FinalizedEpiData. 
+    Validates ``FinalizedEpiData``. Validates that attributes given are of allowed type,
+    and that they are not empty. Also validates there's no NaNs, and that expected
+    columns are present. Finally, validates that data has been de-normalized properly,
+    and that the peak-time in the raw data, corresponds to the peak time in the final-
+    data. 
 
-    Validates that attribute are of allowed type,
-    non-emtpy -> parent methods.
-
-    Further validates that there's no NaNs and that
-    required columns are present.
+    This is a robust validator that basically checks the integrity of the data before 
+    feeding it into the ``DataBuilder`` for the models.
 
     See Also
     --------
     For more information, please see the Parent class:
-    EpiDataContainerValidator    
+    ``EpiDataContainerValidator``   
     """
 
     def __init__(self,
-                 epiconfig:         EpiConfig,
-                 column_registry:   ColumnRegistry,
-                 rawepidata:        RawEpiData,
-                 harmonizedepidata: HarmonizedEpiData,
-                 finalizedepidata:  FinalizedEpiData):
+                 epiconfig : EpiConfig,
+                 column_registry : ColumnRegistry,
+                 rawepidata : RawEpiData,
+                 harmonizedepidata : HarmonizedEpiData,
+                 finalizedepidata : FinalizedEpiData):
 
         super().__init__(epiconfig, 
                          dataclass_validated='FinalizedEpiData')

@@ -22,7 +22,65 @@ from .utils import MissingEpiDataContainer
 
 class EpiDataOrchestrator:
     """
-    Main Orchestrator class: directs work to the children classes that do the heavy lifting
+    Main Orchestrator class that transforms raw data, into a shared data set that all
+    models will be using. In the pipeline that ``EpiDataOrchestrator`` orchestrates, 
+    data is loaded, harmonized, processed and transformed (and normalized). These steps 
+    are executed by the helper classes of ``EpiDataOrchestrator``. Before storing the
+    data classes into attributes (see section 'Attributes'), they are validated using
+    the specific validator.
+
+    Parameters
+    ----------
+    config : EpiConfig
+        Large configuration class that dictates which data to load.            
+
+    Methods
+    -------
+    There is a single method for each stage of the pipeline. There is also a single 
+    method that calls on all of these. Note that the ``load()`` method takes 
+    particularly long. As such, there is an alternative ``from_raw()`` method.
+    Each of these methods additionally validates the outputted data class, by throwing
+    it into the respective validator class.
+    Each of these method returns ``EpiDataOrchestrator``, to allow chaining.
+
+    ``build()``
+        The one method that calls all others. 
+    ``load()``
+        Load the raw data: let ``EpiDataReader`` create ``RawEpiData``.
+    ``harmonize()``
+        Harmonize the raw data: let ``EpiDataHarmonizer`` create ``HarmonizedEpiData`` 
+        and ``ContextEpiData``.
+    ``process()``
+        Process the harmonized data: let ``EpiDataProcessor`` create 
+        ``ProcessedEpiData``.
+    ``build_features()``
+        Build features from the processed data: let ``EpiFeatureBuilder`` create 
+        ``FeatureEpiData``.    
+    ``normalize()``
+        Transform the feature data: let ``EpiDataTransformer`` create 
+        ``TransformedEpiData``.    
+    ``finalize()``
+        Finish the data orchestration: let ``EpiDataFinalizer`` create 
+        ``FinalizedEpiData``.
+
+    Attributes
+    ----------
+    The intermediate data containers are stored into attributes. Note that when one
+    is called that does not contain a container, an exception will be raised.
+    ``data_raw``
+    ``data_context``
+    ``data_harmonized``
+    ``data_processed``
+    ``data_features``
+    ``data_normalized``
+    ``data_final``
+
+    Downstream
+    ----------
+    The final product of ``EpiDataOrchestrator`` is the ``data_final`` attribute. This 
+    ``FinalizedEpiData`` contains attributes ``data_denorm`` and ``data``. These are 
+    the starting point for ``BaseLineDataBuilder`` and ``GraphDataBuilder``: the model-
+    specific data loaders.
     """
     def __init__(self, config: EpiConfig):
         self.config         = config
