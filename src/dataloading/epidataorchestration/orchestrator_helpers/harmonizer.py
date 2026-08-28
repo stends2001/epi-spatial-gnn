@@ -11,7 +11,11 @@ from ..containers import RawEpiData, HarmonizedEpiData, ContextEpiData
 class EpiDataHarmonizer:
     """
     ``EpiDataOrchestrator`` utility class that creates the ``HarmonizedEpiData`` and
-    ``ContextEpiData``. Besides a handful of helper methods, ``EpiDataHarmonizer`` has 
+    ``ContextEpiData``. ``EpiDataHarmonizer`` aggregates data to the right geograhpical
+    level, and tokenizes regions. Further also does the resampling concerning temporal
+    resolution. 
+    
+    Besides a handful of helper methods, ``EpiDataHarmonizer`` has 
     an ``orchestrate()`` method, which returns the ``HarmonizedEpiData`` and 
     ``ContextEpiData``.
 

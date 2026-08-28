@@ -1,28 +1,55 @@
 import time
-from typing import TYPE_CHECKING, assert_never
+from typing import assert_never
 import pandas as pd
-import numpy as np
-from src.utils.textformatting import checkmark
 
-from src.dataloading.epiconfig.epiconfig import EpiConfig
+from ...epiconfig import EpiConfig
 
 from ..utils.normalization import (
     compute_zscore_params, compute_minmax_params,
     apply_log, apply_zscore, apply_minmax
 )
 from ...columnregistration import (
-    LogParams, ZScoreParams, MinMaxParams, TransformationParams, ColumnRegistry, ColEntry
+    LogParams, ZScoreParams, MinMaxParams, 
+    TransformationParams, ColumnRegistry, ColEntry
 )
 
 from ..containers import FeatureEpiData, TransformedEpiData
 from ..utils import EpiDataTemporalSummary,  EpiDataOrchestrationError
 
 class EpiDataTransformer:
+    """
+    ``EpiDataOrchestrator`` utility class that creates the ``TransformedEpiData``. 
+    ``EpiDataTransformer`` transforms the feature data, by adding splits 
+    (train/val/test) and normalizing and log-transforming data when necessary.
+    
+    Besides a handful of helper methods, ``EpiDataTransformer`` has 
+    an ``orchestrate()`` method, which returns the ``TransformedEpiData``.
+    
+    Parameters
+    ----------
+    epiconfig : EpiConfig
+        Large configuration class that dictates which data to load.    
+    column_registration : ColumnRegistry
+        Registry of columns that keeps track of all columns and transformations.
+    temporal_summary : EpiDataTemporalSummary
+        Helper class that stores temporal information, built based on ``EpiConfig``.
 
+    See Also
+    --------
+    ``ColumnRegistry``
+        Stores all columns and transformations. This starts in ``EpiFeatureBuilder``,
+        and is built upon further in EpiDataTransformer.
+
+    Downstream
+    ----------        
+    ``EpiDataOrchestrator`` has six utility classes, each of which is responsible
+    for a single stage in the pipeline of getting model-ready datasets. 
+    ``EpiFeatureBuilder`` is the fifth one.    
+    """    
     def __init__(self,
-                 epiconfig:           EpiConfig,
-                 column_registration: ColumnRegistry,
-                 temporal_summary:    EpiDataTemporalSummary):
+                 epiconfig : EpiConfig,
+                 column_registration : ColumnRegistry,
+                 temporal_summary : EpiDataTemporalSummary):
 
         self.epiconfig           = epiconfig
         self.temporal_summary    = temporal_summary

@@ -1,41 +1,50 @@
 import time
-import json
-from typing import assert_never, TYPE_CHECKING
 import pandas as pd
-import geopandas as gpd
 import numpy as np
-from ....utils.textformatting import checkmark
 
 from ...epiconfig import EpiConfig
-
 from ..utils import EpiDataOrchestrationError
 from ...columnregistration import ColumnRegistry
 from ..containers import ProcessedEpiData, FeatureEpiData
-from ..utils.temporal_summary import EpiDataTemporalSummary
+from ..utils import EpiDataTemporalSummary
 
 class EpiFeatureBuilder:
     """
-    Builds the features based on the processed data
-
-    Parameters:
-    -----------
-    epiconfig: EpiConfig
-    column_registration: ColumnRegistration,
-    temporal_summary: EpiDataTemporalSummary
+    ``EpiDataOrchestrator`` utility class that creates the ``FeatureEpiData``. 
+    ``EpiFeatureBuilder`` adds the right features to the processed data, and keeps track
+    using the ``ColumnRegistry``; adding temporal-index features, lagged variables.
     
-    Utility:
-    -------
-    the orchestrate method runs all required methods, based on EpiConfig and returns an
-    instance of FeatureEpiData    
+    Besides a handful of helper methods, ``EpiFeatureBuilder`` has 
+    an ``orchestrate()`` method, which returns the ``FeatureEpiData``.
+    
+    Parameters
+    ----------
+    epiconfig : EpiConfig
+        Large configuration class that dictates which data to load.    
+    column_registration : ColumnRegistry
+        Registry of columns that keeps track of all columns and transformations.
+    temporal_summary : EpiDataTemporalSummary
+        Helper class that stores temporal information, built based on ``EpiConfig``.
+
+    See Also
+    --------
+    ``ColumnRegistry``
+        Stores all columns and transformations. This starts in ``EpiFeatureBuilder``.
+
+    Downstream
+    ----------        
+    ``EpiDataOrchestrator`` has six utility classes, each of which is responsible
+    for a single stage in the pipeline of getting model-ready datasets. 
+    ``EpiFeatureBuilder`` is the fourth one.    
     """    
     def __init__(self, 
-                 epiconfig:             EpiConfig, 
-                 column_registration:   ColumnRegistry,
-                 temporal_summary:      EpiDataTemporalSummary):
+                 epiconfig : EpiConfig, 
+                 column_registration : ColumnRegistry,
+                 temporal_summary : EpiDataTemporalSummary):
         
-        self.epiconfig          = epiconfig
-        self.column_registration= column_registration
-        self.temporal_summary   = temporal_summary
+        self.epiconfig = epiconfig
+        self.column_registration = column_registration
+        self.temporal_summary = temporal_summary
 
     def _register_static_features(self) -> None:
         """

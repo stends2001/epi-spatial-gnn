@@ -1,8 +1,5 @@
 import time
-import json
-from typing import TYPE_CHECKING
 import pandas as pd
-from ....utils.textformatting import checkmark
 
 from ...epiconfig import EpiConfig
 
@@ -12,10 +9,35 @@ from ...columnregistration import ColumnRegistry
 
 class EpiDataFinalizer:
     """
+    ``EpiDataOrchestrator`` utility class that creates the ``FinalizedEpiData``. 
+    ``EpiDataFinalizer`` finalizes the normalized data set, and creates a reverse-
+    normalized data frame too.
+    
+    Besides a handful of helper methods, ``EpiDataFinalizer`` has 
+    an ``orchestrate()`` method, which returns the ``FinalizedEpiData``.
+    
+    Parameters
+    ----------
+    epiconfig : EpiConfig
+        Large configuration class that dictates which data to load.    
+    column_registration : ColumnRegistry
+        Registry of columns that keeps track of all columns and transformations.
+
+    See Also
+    --------
+    ``ColumnRegistry``
+        Stores all columns and transformations. This starts in ``EpiFeatureBuilder``,
+        and is built upon further in EpiDataTransformer.
+
+    Downstream
+    ----------        
+    ``EpiDataOrchestrator`` has six utility classes, each of which is responsible
+    for a single stage in the pipeline of getting model-ready datasets. 
+    ``EpiDataFinalizer`` is the sixt, and last one.    
     """   
     def __init__(self, 
-                 epiconfig:             EpiConfig, 
-                 column_registration:   ColumnRegistry):
+                 epiconfig : EpiConfig, 
+                 column_registration : ColumnRegistry):
         
         self.epiconfig = epiconfig 
         self.column_registration = column_registration

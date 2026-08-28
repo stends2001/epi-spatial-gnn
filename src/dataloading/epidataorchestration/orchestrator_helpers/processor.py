@@ -1,33 +1,38 @@
 import time
-from typing import TYPE_CHECKING
 import pandas as pd
 
 from ...epiconfig import EpiConfig
-
-from ....utils.textformatting import checkmark
 from ..utils.temporal_summary import EpiDataTemporalSummary
 from ..containers import ProcessedEpiData, HarmonizedEpiData
 
 class EpiDataProcessor:     
     """
-    Processes the harmonzied data
+    ``EpiDataOrchestrator`` utility class that creates the ``ProcessedEpiData``. 
+    ``EpiDataProcessor`` processes the harmonzied data; transforms cases into incidenc,
+    and filters dates.
+    
+    Besides a handful of helper methods, ``EpiDataProcessor`` has 
+    an ``orchestrate()`` method, which returns the ``ProcessedEpiData``.
 
-    Parameters:
-    -----------
-    epiconfig: EpiConfig
-    temporal_summary: EpiDataTemporalSummary
+    Parameters
+    ----------
+    epiconfig : EpiConfig
+        Large configuration class that dictates which data to load.    
+    temporal_summary : EpiDataTemporalSummary
+        Helper class that stores temporal information, built based on ``EpiConfig``.
 
-    Utility:
-    -------
-    the orchestrate method runs all required methods, based on EpiConfig and returns an
-    instance of ProcessedEpiData    
-    """
+    Downstream
+    ----------        
+    ``EpiDataOrchestrator`` has six utility classes, each of which is responsible
+    for a single stage in the pipeline of getting model-ready datasets. 
+    ``EpiFeatureBuilder`` is the third one.    
+    """        
     def __init__(self, 
-                 config:            EpiConfig, 
-                 temporal_summary:  EpiDataTemporalSummary):
+                 config : EpiConfig, 
+                 temporal_summary : EpiDataTemporalSummary):
         
-        self.config             = config
-        self.temporal_summary   = temporal_summary
+        self.config = config
+        self.temporal_summary = temporal_summary
 
     def _add_incidence_column(self, epipopdata: pd.DataFrame) -> pd.DataFrame:
         """adds incidence column"""
