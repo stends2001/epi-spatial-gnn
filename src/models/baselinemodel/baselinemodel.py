@@ -15,7 +15,7 @@ class BaseLineModel(BaseModel):
     NOTE
     ----
     Baseline models predict from the reverse-transformed (original scale) data in the 
-    ``EpiDataOrchestrator.`` The predictions are therefore also reverse-transformed. The
+    ``EpiDataOrchestrator``. The predictions are therefore also reverse-transformed. The
     ``PredictionManager`` expects transformed predictions, however, so ``_transform`` 
     transforms the predictions.
 
