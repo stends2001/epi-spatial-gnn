@@ -27,7 +27,7 @@ class ForecastDisplayMixin:
     supportive hidden methods.
     """
     predictions : PredictionManager
-    dataloadermanager : GraphDataBuilder | BaseLineDataBuilder
+    databuilder : GraphDataBuilder | BaseLineDataBuilder
     epiconfig : EpiConfig
     column_registration : ColumnRegistry
     context_data : ContextEpiData
@@ -63,7 +63,7 @@ class ForecastDisplayMixin:
 
         # extend axes to one step before and one after the first and last pred      
         xlimits             = [self.temporal_summary._shift(x_range[0], -1), self.temporal_summary._shift(x_range[1], 1)]        
-        timesteps_ahead     = int(self.dataloadermanager.dataorchestrator.config.horizon_leadtime + horizon)       
+        timesteps_ahead     = int(self.databuilder.dataorchestrator.config.horizon_leadtime + horizon)       
        
         # ==== get predictions ==== #
         nodes_list, df_pred, df_pred_aggr = self._get_forecast_dfs(node_idx, dataset, horizon, is_original)
@@ -200,7 +200,7 @@ class ForecastDisplayMixin:
 
     def _return_suptitle(self, dataset: DataSetSplit, timesteps_ahead: int, is_original: bool) -> str:
         """returns suptitle based on plotting-function's input."""
-        suptitle = f'{self.dataloadermanager.dataorchestrator.config.target_column} predictions by {self.name}, {timesteps_ahead}{self.dataloadermanager.dataorchestrator.config.temporal_frequency} ahead' 
+        suptitle = f'{self.databuilder.dataorchestrator.config.target_column} predictions by {self.name}, {timesteps_ahead}{self.databuilder.dataorchestrator.config.temporal_frequency} ahead' 
 
         if dataset != 'test':
             suptitle += f" [{dataset}]"
