@@ -35,7 +35,7 @@ class BaseLineModel(BaseModel):
                  databuilder : BaseLineDataBuilder,                     
                  name : str,):
         
-        self._expected_dataloadermanager = 'BaseLineDataBuilder'
+        self._expected_databuilder = 'BaseLineDataBuilder'
         
         super().__init__(databuilder,  name)
 
@@ -63,7 +63,7 @@ class BaseLineModel(BaseModel):
         Apply normalization to baseline model predictions, bringing them into the 
         transformed scale expected by PredictionManager.
         """
-        if self.dataloadermanager.dataorchestrator.config.target_column != 'incidence':
+        if self.databuilder.dataorchestrator.config.target_column != 'incidence':
             return df.copy()
 
         col_entry = self.column_registration.get_entry_by_name('target')
