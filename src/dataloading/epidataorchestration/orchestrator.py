@@ -98,8 +98,8 @@ class EpiDataOrchestrator:
         self.column_registration.add_column(
             'target', 
             'target',
-            needs_normalization  = False if self.config.target_column == 'cases' else True,
-            transformation_group = 'self'if self.config.target_column != 'cases' else None
+            transformation =  True,
+            transformation_group = 'self'
         )   
 
         # Store results at each stage

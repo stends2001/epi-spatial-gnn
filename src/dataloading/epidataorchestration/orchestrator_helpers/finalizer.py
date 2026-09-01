@@ -54,8 +54,8 @@ class EpiDataFinalizer:
         self.column_registration.add_column(
             'pred',
             'pred',
-            needs_normalization=needs_normalization,
-            transformation_group=transformation_group
+            transformation = needs_normalization,
+            transformation_group = transformation_group
         )                   
 
     def _add_horizons(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -75,7 +75,7 @@ class EpiDataFinalizer:
             self.column_registration.add_column(
                 target_col,
                 'target',
-                needs_normalization=needs_normalization,
+                transformation=needs_normalization,
                 transformation_group=transformation_group
             )
            

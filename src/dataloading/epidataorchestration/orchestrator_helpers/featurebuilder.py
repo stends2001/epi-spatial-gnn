@@ -55,13 +55,15 @@ class EpiFeatureBuilder:
         if self.epiconfig.feature_popsize:
             self.column_registration.add_column(
                 'population_size', 'feature',
-                needs_normalization=True, transformation_group='self'
+                transformation = True, 
+                transformation_group='self'
             )
 
         if self.epiconfig.feature_popdens:
             self.column_registration.add_column(
                 'population_density', 'feature',
-                needs_normalization=True, transformation_group='self'
+                transformation = True, 
+                transformation_group='self'
             )
 
     def _merge_features(self, df: pd.DataFrame, processed_data: 'ProcessedEpiData') -> pd.DataFrame:
@@ -109,8 +111,8 @@ class EpiFeatureBuilder:
             dfc[sin_col_d] = np.sin(2 * np.pi * days / days_in_week)
             dfc[cos_col_d] = np.cos(2 * np.pi * days / days_in_week)    
 
-            self.column_registration.add_column(sin_col_d, 'feature', needs_normalization=False, transformation_group=None)    
-            self.column_registration.add_column(cos_col_d, 'feature', needs_normalization=False, transformation_group=None)     
+            self.column_registration.add_column(sin_col_d, 'feature', transformation=False, transformation_group=None)    
+            self.column_registration.add_column(cos_col_d, 'feature', transformation=False, transformation_group=None)     
 
         # ============ week in year ===========
         if self.epiconfig.time_index_w:         
@@ -131,8 +133,8 @@ class EpiFeatureBuilder:
             dfc[sin_col_w] = np.sin(2 * np.pi * weeks / weeks_in_year)
             dfc[cos_col_w] = np.cos(2 * np.pi * weeks / weeks_in_year)
 
-            self.column_registration.add_column(sin_col_w, 'feature', needs_normalization=False, transformation_group=None)    
-            self.column_registration.add_column(cos_col_w, 'feature', needs_normalization=False, transformation_group=None)     
+            self.column_registration.add_column(sin_col_w, 'feature', transformation=False, transformation_group=None)    
+            self.column_registration.add_column(cos_col_w, 'feature', transformation=False, transformation_group=None)     
 
         # ============ month in year ===========
         if self.epiconfig.time_index_m:
@@ -145,8 +147,8 @@ class EpiFeatureBuilder:
             dfc[sin_col_m] = np.sin(2 * np.pi * months / months_in_year)
             dfc[cos_col_m] = np.cos(2 * np.pi * months / months_in_year)
 
-            self.column_registration.add_column(sin_col_m, 'feature', needs_normalization=False, transformation_group=None)    
-            self.column_registration.add_column(cos_col_m, 'feature', needs_normalization=False, transformation_group=None)                 
+            self.column_registration.add_column(sin_col_m, 'feature', transformation=False, transformation_group=None)    
+            self.column_registration.add_column(cos_col_m, 'feature', transformation=False, transformation_group=None)                 
 
         return dfc 
     
@@ -170,8 +172,8 @@ class EpiFeatureBuilder:
             self.column_registration.add_column(
                 feature, 
                 'feature',
-                needs_normalization  =True,
-                transformation_group =reference_normalization
+                transformation = True,
+                transformation_group = reference_normalization
             )
             
         return dfc.dropna().reset_index(drop = True)
