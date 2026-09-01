@@ -3,7 +3,7 @@ from typing import cast
 from scipy.stats import spearmanr, pearsonr
 import inspect
 
-class MetricsCalculatorBase:
+class MetricsCalculator:
     """
     Metrics calculator for point predictions.
     Calculates 1` metrics, visible in the 'Methods' section.
@@ -47,7 +47,7 @@ class MetricsCalculatorBase:
     """
     def __init__(self, 
                  target_col : str,
-                 pred_cols : list[str],
+                 pred_cols : str,
                  id_col : str,
                  temporal_col : str,
                  ):
@@ -63,7 +63,6 @@ class MetricsCalculatorBase:
         return [
             name for name, member in inspect.getmembers(self, predicate=inspect.ismethod)
             if not name.startswith("_")
-            and name not in vars(MetricsCalculatorBase)  # exclude base class non-private methods
         ]
 
     def rmse(self, y: np.ndarray, yhat: np.ndarray) -> float:
@@ -83,7 +82,7 @@ class MetricsCalculatorBase:
         return corr
 
     def nmb(self, y: np.ndarray, yhat: np.ndarray) -> float | None:
-        """
+        r"""
         Component of ccc: normalized mean bias.
         When variation in target or in predictions is 0, None is returned.
 
@@ -111,9 +110,8 @@ class MetricsCalculatorBase:
 
         return float((mean_yhat - mean_y) / np.sqrt(sd_y * sd_yhat))
 
-
     def vr(self, y: np.ndarray, yhat: np.ndarray) -> float | None:
-        """
+        r"""
         Component of ccc: variance ratio.
         When variation in target or in predictions is 0, None is returned.
 
@@ -142,7 +140,7 @@ class MetricsCalculatorBase:
         return float(sd_yhat / sd_y)
 
     def bcf(self, y: np.ndarray, yhat: np.ndarray) -> float | None:
-        """
+        r"""
         Bias correction factor (part of CCC).
         Returns None when variation in target or predictions is 0.
 
@@ -164,7 +162,7 @@ class MetricsCalculatorBase:
         return float(2 / (nu + 1 / nu + u ** 2))
 
     def ccc(self, y: np.ndarray, yhat: np.ndarray) -> float | None:
-        """
+        r"""
         Concordance correlation coefficient: a mix of pearson correlation and a
         bias correction factor (bcf), see Lin (1989).
         When variation in target or in predictions is 0, None is returned.
