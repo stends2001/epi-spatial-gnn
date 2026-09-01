@@ -52,7 +52,10 @@ class BaseModel(ModelStatusMixin,
         Mixin class to that deals with the model's appearance 
         (colors, name, representation)
     ``ForecastDisplayMixin``
-        Mixin class that deals with the visualizing the model's predictions.        
+        Mixin class that deals with the visualizing the model's predictions.   
+
+    ``PredictionsManager``
+        Manages models' predictions.     
 
     Downstream
     -----------
