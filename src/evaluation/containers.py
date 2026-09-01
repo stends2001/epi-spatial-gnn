@@ -4,17 +4,16 @@ from ..utils.types import DataSetSplit
 
 class EvaluationPredictionsCompilation:
     """ 
-    Stores all predictions and metrics within the evaluator. The main attribute is
-    self._data. This dictionary stores data the following way:
-    _data:  dict[DATASET: 
-                dict[HORIZON: 
-                    dict["predictions"  : pd.DataFrame, 
-                         "metrics"      : pd.DataFrame]]]
+    Stores all predictions and metrics. Dictionary stored in ``_data`` represents:
+    dict[DATASET: 
+        dict[HORIZON: 
+            dict["predictions"  : pd.DataFrame, 
+                    "metrics"   : pd.DataFrame]]]
 
     Per combination of dataset and horizon, there is a long table as follows in
     dict[DATASET][HORIZON]['predictions']
-    _____________________________________________________
-    | timestamp | node | target | model | pred-cols ... |
+    _____________________________________________
+    | timestamp | node | target | model | pred |
 
     and _metric_compilations
     ___________________________________
@@ -22,46 +21,61 @@ class EvaluationPredictionsCompilation:
 
     Methods
     -------
-    - add_data()
-    - get_data()
+    ``add_data()``
+        Add data to ``EvaluationPredictionsCompilation``.
+    ``get_data()``
+        Get data (dictionary with keys 'metrics' and 'predictions').
 
-    Properties
+    Attributes
     ----------
-    - datasets
-    - horizons    
+    ``datasets``
+        Which of ``'train'``, ``'val'`` and ``'test'`` have data stored.
+    ``horizons``
+        For which horizons data is stored.
 
-    Note
-    ----
-    The structure of self._data looks as follows:
-    {
-        'train': {'horizon_0' : {'predictions' : df, 'metrics' : df}},    
-        'val'  : {'horizon_0' : {'predictions' : df, 'metrics' : df},
-                  'horizon_1' : {'predictions' : df, 'metrics' : df}}                 
-        'test' : {'horizon_0' : {'predictions' : df, 'metrics' : df},
-                  'horizon_1' : {'predictions' : df, 'metrics' : df},
-                  'horizon_2' : {'predictions' : df, 'metrics' : df}},
-    }    
+    See Also
+    --------
+    ``Evaluator``
+        A single ``EvaluationPredictionsCompilation`` is associated with an 
+        ``Evaluator``.
+
+    Downstream
+    ----------
+    Multiple models are fed into the same ``Evaluator``, which evaluates them in unison,
+    through compiling an ``EvaluationPredictionsCompilation``.
     """
 
     def __init__(self, model_names: list[str]):
-        self.model_names    = model_names
+        self.model_names = model_names
         self._data: dict[str, dict[str, dict[str, pd.DataFrame]]] = {}
 
     # ======== DATA WORKING ====== #
-    def add_data(self, predictions: pd.DataFrame, metrics: pd.DataFrame, horizon: int, dataset: DataSetSplit):
+    def add_data(self, 
+                 predictions: pd.DataFrame, 
+                 metrics: pd.DataFrame, 
+                 horizon: int, 
+                 dataset: DataSetSplit):
         """
         Adds data to self._data to [dataset][horizon]
 
         Parameters
         ----------
-        predictions: pd.DataFrame
-            predictions dataframe with columns TODO
-        metrics: pd.DataFrame
-            metrics dataframe with columns TODO
-        horizon: int
-            integer of horizon of prediction
-        dataset: Literal['train','val','test']
-            dataset of prediction
+        predictions : pd.DataFrame
+            Predictions dataframe with columns
+            - ``'timestamp'``
+            - ``'node'``
+            - ``'target'``
+            - ``'pred'``         
+            - ``'model'``
+        metrics : pd.DataFrame
+            Metrics dataframe with columns 
+            - ``'node'``
+            - ``'mode'``
+            - a column for each metrics
+        horizon : int
+            Integer of horizon of prediction, starting at 0.
+        dataset : Literal['train','val','test']
+            Dataset of prediction.
         """
         horizon_str = f"horizon_{horizon}"
         
@@ -70,7 +84,9 @@ class EvaluationPredictionsCompilation:
             
         self._data[dataset][horizon_str] = {'predictions': predictions, 'metrics' : metrics}
 
-    def get_data(self, horizon: int, dataset: str) -> dict[str, pd.DataFrame]:
+    def get_data(self, 
+                 horizon: int, 
+                 dataset: str) -> dict[str, pd.DataFrame]:
         """
         Gets data from self._data, from [dataset][horizon]
 
