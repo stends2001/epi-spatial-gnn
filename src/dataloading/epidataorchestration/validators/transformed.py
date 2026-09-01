@@ -6,6 +6,7 @@ from .exceptions import MissingColumnError, NaNsFoundError, InvalidNormalization
 from ..containers import TransformedEpiData
 from ...columnregistration import ColumnRegistry
 from ...epiconfig import EpiConfig
+from ...columnregistration.exceptions import ColEntryMissingAttribute
 
 class TransformedValidator(EpiDataContainerValidator):
     """ 
@@ -76,18 +77,22 @@ class TransformedValidator(EpiDataContainerValidator):
 
         for col_entry in self.column_registry._entries:
 
-            match (col_entry.transformation, col_entry._transformation_group):
+            match (col_entry.transformation, col_entry.transformation_group):
 
                 case (False, _):
                     continue
 
                 case (True, 'self'):
-                    params = col_entry._transformation_params
+                    params = col_entry.transformation_params
 
                 case (True, str()):
                     # referral columns — params are validated via their reference column
                     continue
 
+                case (True, None):
+                        raise ColEntryMissingAttribute(
+                            col_entry.column_name, "transformation_params"
+                            )    
                 case _:
                     assert_never(col_entry.transformation)
 

@@ -1,6 +1,8 @@
 import time
 import pandas as pd
 
+from ...columnregistration.exceptions import ColEntryMissingAttribute
+
 from ...epiconfig import EpiConfig
 
 from ..containers import TransformedEpiData, FinalizedEpiData
@@ -94,17 +96,29 @@ class EpiDataFinalizer:
             return dfc
 
         for col_entry in self.column_registration._entries:
+            # TODO: MAKE MATCH/CASE
             if not col_entry.transformation:
                 continue
 
             if col_entry.column_name not in dfc.columns:
                 continue
+            
+            if col_entry.transformation_group == 'self':
+                params = col_entry.transformation_params
 
-            if col_entry._transformation_group == 'self':
-                params = col_entry._transformation_params
+                if params is None:
+                    raise ColEntryMissingAttribute(
+                        col_entry.column_name, "transformation_params"
+                        )   
+
+            elif col_entry.transformation_group is None:
+                raise ColEntryMissingAttribute(
+                    col_entry.column_name, "transformation_group"
+                    )
+                               
             else:
-                ref    = self.column_registration.get_entry_by_name(col_entry._transformation_group)
-                params = ref._transformation_params
+                ref    = self.column_registration.get_entry_by_name(col_entry.transformation_group)
+                params = ref.transformation_params
 
             if params is None:
                 continue

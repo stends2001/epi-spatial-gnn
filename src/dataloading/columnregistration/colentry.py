@@ -18,7 +18,7 @@ class ColEntry:
         Type of the column.
     transformation : bool
         Whether or not the column requires a transformation.
-    _transformation_group : str | None
+    transformation_group : str | None
         Specifies what directs the transformation of this column. There are three 
         options:
         
@@ -28,7 +28,7 @@ class ColEntry:
         - ``None`` : no transformation group needed. This is only possible when 
         ``transformation`` == ``False``.
 
-    _transformation_params : TransformationParams | None = None
+    transformation_params : TransformationParams | None = None
         Dataclass that holds information on all transformations that have been done
         on the column.
 
@@ -61,8 +61,8 @@ class ColEntry:
     column_name : str
     column_type : ColumnType
     transformation : bool 
-    _transformation_group :  str | None                   = None
-    _transformation_params : TransformationParams | None  = None    
+    transformation_group :  str | None                   = None
+    transformation_params : TransformationParams | None  = None    
     
     def __post_init__(self):
 
@@ -71,38 +71,36 @@ class ColEntry:
         self._validate_input()
 
         # ensure lower case in transformation group
-        if self._transformation_group:
-            self._transformation_group = self._transformation_group.lower()
+        if self.transformation_group:
+            self.transformation_group = self.transformation_group.lower()
 
     def _validate_input(self) -> None:
         """validate against invalid states"""
         if not self.transformation:
-            if self._transformation_group is not None:
+            if self.transformation_group is not None:
                 raise InvalidColEntry(
                     f"transformation is False, but _transformation_group is given for {self.column_name}."
                     )
-            if self._transformation_params is not None:
+            if self.transformation_params is not None:
                 raise InvalidColEntry(
                     f"transformation is False, but _transformation_params is given for {self.column_name}."
                     )                
 
-    @property
-    def transformation_group(self) -> str:
-        if self._transformation_group:
-            return self._transformation_group
-        else:
-            raise ColEntryMissingAttribute(
-                self.column_name, "transformation_group"
-                )
-
-    @property
-    def transformation_params(self) -> TransformationParams:
-        if self._transformation_params:
-            return self._transformation_params
-        else:
-            raise ColEntryMissingAttribute(
-                self.column_name, "transformation_params"
-                )     
+    # def get_transformation_group(self) -> str:
+    #     if self.transformation_group:
+    #         return self.transformation_group
+    #     else:
+    #         raise ColEntryMissingAttribute(
+    #             self.column_name, "transformation_group"
+    #             )
+        
+    # def get_transformation_params(self) -> TransformationParams:
+    #     if self.transformation_params:
+    #         return self.transformation_params
+    #     else:
+    #         raise ColEntryMissingAttribute(
+    #             self.column_name, "transformation_params"
+    #             )     
     
     def __repr__(self) -> str:
         representation = (
@@ -113,8 +111,8 @@ class ColEntry:
         
         if self.transformation:
             representation += f", transformation = {self.transformation}"
-            representation += f", transformation_group = {self._transformation_group}"            
-            representation += f", transformation_params = {self._transformation_params}"                 
+            representation += f", transformation_group = {self.transformation_group}"            
+            representation += f", transformation_params = {self.transformation_params}"                 
         
         representation += ")>"
         return representation

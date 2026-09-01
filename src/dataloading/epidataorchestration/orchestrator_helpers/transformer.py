@@ -2,6 +2,8 @@ import time
 from typing import assert_never
 import pandas as pd
 
+from ...columnregistration.exceptions import ColEntryMissingAttribute
+
 from ...epiconfig import EpiConfig
 
 from ..utils.normalization import (
@@ -124,7 +126,7 @@ class EpiDataTransformer:
         for col_entry in self.column_registration._entries:
             if not col_entry.transformation:
                 continue
-            if col_entry._transformation_group != 'self':
+            if col_entry.transformation_group != 'self':
                 continue
 
             if method == 'zscore':
@@ -140,11 +142,11 @@ class EpiDataTransformer:
         for col_entry in self.column_registration._entries:
             if not col_entry.transformation:
                 continue
-            if col_entry._transformation_group in (None, 'self'):
+            if col_entry.transformation_group in (None, 'self'):
                 continue
 
-            ref = self.column_registration.get_entry_by_name(col_entry._transformation_group)
-            p   = ref._transformation_params
+            ref = self.column_registration.get_entry_by_name(col_entry.transformation_group)
+            p   = ref.transformation_params
 
             if p is None:
                 continue
@@ -187,19 +189,24 @@ class EpiDataTransformer:
         For 'self' columns: the column's own params.
         For referral columns: the reference column's params.
         """
-        match (col_entry.transformation, col_entry._transformation_group):
+        match (col_entry.transformation, col_entry.transformation_group):
 
             case (False, _):
                 return None
 
             case (True, 'self'):
-                return col_entry._transformation_params
+                return col_entry.transformation_params
 
             case (True, str()):
                 ref = self.column_registration.get_entry_by_name(
-                    col_entry._transformation_group
+                    col_entry.transformation_group
                 )
-                return ref._transformation_params
+                return ref.transformation_params
+
+            case (True, None):
+                raise ColEntryMissingAttribute(
+                    col_entry.column_name, "transformation_params"
+                    )                     
 
             case _:
                 assert_never(col_entry.transformation)

@@ -102,8 +102,8 @@ class ColumnRegistry:
         entry = ColEntry(column_name            = column_name,
                          column_type            = column_type,
                          transformation         = transformation,
-                         _transformation_group  = transformation_group,
-                         _transformation_params = transformation_params)
+                         transformation_group   = transformation_group,
+                         transformation_params  = transformation_params)
         
         # Append to the registry
         self._entries.append(entry)
@@ -125,43 +125,44 @@ class ColumnRegistry:
         """
         col = self.get_entry_by_name(column_name)
 
-        if col._transformation_params is None:
-            col._transformation_params = TransformationParams()
+        if col.transformation_params is None:
+            col.transformation_params = TransformationParams()
 
         # match the type of the parameters, and if these have already been set, then throw an error
         match params:
 
             case LogParams():
             
-                if col._transformation_params.log is not None:
+                if col.transformation_params.log is not None:
                     raise TransformationParamsAlreadySet(
                         column_name, 
                         params.__class__.__name__
                         )
             
-                col._transformation_params.log = params
+                col.transformation_params.log = params
                 
             case ZScoreParams():
 
-                if col._transformation_params.zscore is not None:
+                if col.transformation_params.zscore is not None:
                     raise TransformationParamsAlreadySet(
                         column_name, 
                         params.__class__.__name__
                         )
             
-                col._transformation_params.zscore = params
+                col.transformation_params.zscore = params
 
             case MinMaxParams():
-                if col._transformation_params.minmax is not None:
+                if col.transformation_params.minmax is not None:
                     raise TransformationParamsAlreadySet(
                         column_name, 
                         params.__class__.__name__
                         )
             
-                col._transformation_params.minmax = params                            
+                col.transformation_params.minmax = params                            
 
             case _:
                 raise ValueError(f"Unsupported params type: {type(params)}")
+            
         logger.debug("ColEntry '%s' _transformation_params transform_params updated.", 
                      column_name)                  
         
@@ -190,7 +191,7 @@ class ColumnRegistry:
             if entry.transformation:
 
                 # Use the column itself as key if normalization_group is 'self'
-                if entry._transformation_group:
+                if entry.transformation_group:
                     key = entry.transformation_group if entry.transformation_group != 'self' else entry.column_name
                 else:
                     key = 'undefined'
