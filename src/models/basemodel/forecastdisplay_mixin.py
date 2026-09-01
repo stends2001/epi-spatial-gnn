@@ -183,7 +183,7 @@ class ForecastDisplayMixin:
         """plots targets in single line on given ax."""        
         sns.lineplot(data       = df_node, 
                     x          = self.epiconfig.temporal_column, 
-                    y          = self.epiconfig.target_column,    
+                    y          = 'target',    
                     color      = testcolor,          
                     marker     = 'o',   
                     label      = 'ground truth', 
