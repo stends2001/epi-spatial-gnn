@@ -52,8 +52,9 @@ class ColumnRegistry:
 
     See Also
     --------
-    ``ColEntry`` : A single entry stored in ``ColumnRegistry`` that contains metadata
-    of a single column.
+    ``ColEntry`` 
+        A single entry stored in ``ColumnRegistry`` that contains metadata
+        of a single column.
 
     Downstream
     ----------
