@@ -204,8 +204,8 @@ class PredictionManager:
         if self.epiconfig.normalization_method:
             col_entry = self.column_registration.get_entry_by_name('target')
 
-            if col_entry.transformation and col_entry._transformation_params is not None:
-                params = col_entry._transformation_params
+            if col_entry.transformation and col_entry.transformation_params is not None:
+                params = col_entry.transformation_params
 
                 for col in self.column_registration.pred_columns + ['target']:
                     if col not in df_denorm.columns:
