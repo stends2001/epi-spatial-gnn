@@ -3,7 +3,7 @@ from .baselinemodel import BaseLineModel
 
 from ...utils import DataSetSplit
 
-class PersistenceModel(BaseLineModel):
+class Persistence(BaseLineModel):
     """ 
     Persistence model returns the most recent observation as prediction.
 

@@ -2,7 +2,7 @@ from matplotlib.colors import to_rgb
 
 model_colors = {
     # baseline:
-    'persistencemodel'  : "#888888",
+    'persistence'  : "#888888",
     'seasonalaverage'   : "#595959",
 
     # gnn
