@@ -3,7 +3,7 @@ from matplotlib.colors import to_rgb
 model_colors = {
     # baseline:
     'persistencemodel'  : "#888888",
-    'climateologymodel' : "#595959",
+    'seasonalaverage'   : "#595959",
 
     # gnn
     'gcnmodel'          : '#B77914',

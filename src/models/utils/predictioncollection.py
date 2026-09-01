@@ -7,60 +7,79 @@ from .exceptions import MissingPredictionsError
 class PredictionCollection:
     """
     Stores predictions across horizons for a single datast (train/val/test)
-    Predictions are stored under three variables:
-    - horizon:              int
-    - is_original:          bool
-    - spatially_aggregated: bool
     
-    All data is stored in attribute `_data` which is interacted with through
-    methods
-    - `add()`
-    - `get()`
+    Predictions are stored in a dictionary with three levels:
+
+    - ``horizon`` : int (counting from zero)
+    - ``is_original`` : bool (original scale (True) or transformed scale (False))
+    - ``spatially_aggregated`` : bool (national (True) or per spatial unit (False))
+    
+    Methods
+    -------
+    ``add()``
+        Add a dataset to ``PredictionCollection``.
+    ``get()``
+        Get a dataset from ``PredictionCollection``.    
+
+    See Also
+    --------
+    ``PredictionManager``
+        Stores three ``PredictionCollection``s, one for each of train/val/test.
+
+    Downstream
+    ----------
+    Each mode class is a subclass of ``BaseModel``, which creates an instance of 
+    ``PredictionManager``. These in turn consist of three ``PredictionCollection``s.
     """
-    _data: dict[tuple[int, bool, bool], pd.DataFrame] = field(default_factory=dict)       # a new dictionary is created for each class' instance
+
+    # a new dictionary is created for each class' instance
+    _data: dict[tuple[int, bool, bool], pd.DataFrame] = field(default_factory=dict)      
     
     def add(self, 
-            data:                   pd.DataFrame, 
-            horizon:                int, 
-            is_original:            bool, 
-            spatially_aggregated:   bool):
+            data : pd.DataFrame, 
+            horizon : int, 
+            is_original : bool, 
+            spatially_aggregated : bool):
         """
-        Add predictions
+        Add predictions to storage.
 
         Parameters
         ----------
-        data: pd.DataFrame
-            the model's predictions for the specific combination of parameters.
-            df has been validated in PredictionsManager
-        horizon: int
-            the index of the horizon (NOTE always starts at 0 independently of horizon_leadtime)
-        is_original: bool
-            if False, then transformed scale, if True then nontransformed        
-        spatially_aggregated: bool
-            whether the predictions are per node, or spatially aggregated (i.e. national).
+        data : pd.DataFrame
+            The model's predictions for the specific combination of parameters.
+        horizon : int
+            The horizon to store. Starts at zero, irrespective of horizon lead time.
+        is_original : bool
+            If ``False``, then transformed scale, if ``True`` then original scale.        
+        spatially_aggregated : bool
+            Whether the predictions are per node (``False``), or spatially aggregated 
+            (i.e. national) (``True``).
         """
         self._data[(horizon, is_original, spatially_aggregated)] = data
     
     def get(self, 
-            horizon:                int, 
-            is_original:            bool, 
-            spatially_aggregated:   bool) -> pd.DataFrame:
+            horizon : int, 
+            is_original : bool, 
+            spatially_aggregated : bool) -> pd.DataFrame:
         """
-        get predictions. The opposite of `.add()`
+        Get predictions from storage.
 
         Parameters
         ----------
-        horizon: int
-            the index of the horizon (NOTE always starts at 0 independently of horizon_leadtime)
-        is_original: bool
-            if False, then transformed scale, if True then nontransformed        
-        spatially_aggregated: bool
-            whether the predictions are per node, or spatially aggregated (i.e. national).
+        horizon : int
+            The horizon to store. Starts at zero, irrespective of horizon lead time.
+        is_original : bool
+            If ``False``, then transformed scale, if ``True`` then original scale.             
+        spatially_aggregated : bool
+            Whether the predictions are per node (``False``), or spatially aggregated 
+            (i.e. national) (``True``).
         """
         key = (horizon, is_original, spatially_aggregated)
 
         if key not in self._data:
-            raise MissingPredictionsError(f"No predictions found for horizon={horizon}, is_original={is_original}, spatially_aggregated={spatially_aggregated}. Available: {list(self._data.keys())}")
+            raise MissingPredictionsError(
+                f"No predictions found for horizon={horizon}, is_original={is_original}, spatially_aggregated={spatially_aggregated}. Available: {list(self._data.keys())}"
+                )
         
         return self._data[key].copy()
 
@@ -75,8 +94,8 @@ class PredictionCollection:
     
     def __repr__(self) -> str:
         if self._contains_data():
-            internals =  f"predictions for horizons {self.horizons}"
+            representation =  f"predictions for horizons {self.horizons}"
         else:
-            internals = "no predictions"
+            representation = "no predictions"
         
-        return f"<{self.__class__.__name__}({internals})>"
+        return f"<{self.__class__.__name__}({representation})>"

@@ -15,57 +15,50 @@ from ...utils import DataSetSplit
 
 class PredictionManager:
     """
-    Manages predictions in a centralized class.
-    Each model has an instance, at `model.predictions`
+    Manages a single model's predictions in a centralized class.
 
-    Within this class, each of ['train','val','test'] is an
-    instance of PredictionCollection - dataframes per horizon.
-
-    Parameters
-    ----------
-    epiconfig: EpiConfig
-        the dataorchestrator's configuration object
-    column_registration: ColumnRegistration
-        the dataorchestrator's columnregistration object
-    temporal_summary: EpiDataTemporalSummary
-        the temporal summary of the epidataorchestrator
+    Within this class, each of ['train','val','test'] is an instance of 
+    ``PredictionCollection``.
 
     NOTE
     ----
     The predictions and the targets are shifted here back to how they'd be
     observed in reality. Thus, with respect to the dataorchestrator's 
     final data, the timestamp/target is shifted.
+    
+    Parameters
+    ----------
+    epiconfig : EpiConfig
+        Large configuration class that dictates which data to load.    
+    column_registration : ColumnRegistry
+        Registry of columns that keeps track of all columns and transformations.
+    temporal_summary : EpiDataTemporalSummary
+        Helper class that stores temporal information, built based on ``EpiConfig``.
 
     Methods
     -------
-    ##### public methods
-    - `add_horizon_predictions()`
-        adds data to PredictionManager: calls all necessary helper functions internally
-    - `get_preds()`
-        gets data from PredictionManager
+    ``add_horizon_predictions()``
+        Adds data to ``PredictionManager``.
+    ``get_preds()``
+        Gets data from ``PredictionManager``.
 
-    ##### hidden functions
-    a range of methods to support the public methods.
-    - `_return_dataset()`
-    - `_setup_reverse_transformations()`
-    - `_setup_required_columns()`
-    - `_shift_prediction_timestamp()`
-    - `_denorm_predictions()`
-    - `_validate_columns()`
-    - `_get_anchor_for_merge()`
-    - `_filter_by_dataset_timerange()`
-    - `_validate_predictions_temporally()`
-    - `_aggregate_predictions_spatially()`
+    There are additional hidden (internal) functions that supper the ones listed above.
 
     See Also
     --------
-    PredictionCollection
+    ``PredictionCollection``
+        Stores predictions across horizons for a single datast (train/val/test)    
+
+    Downstream
+    ----------
+    Each mode class is a subclass of ``BaseModel``, which creates an instance of 
+    ``PredictionManager``. These in turn consist of three ``PredictionCollection``s.    
     """
 
     def __init__(self, 
-                 data_orchestrator:     EpiDataOrchestrator, 
-                 column_registration:   ColumnRegistry,
-                 temporal_summary:      EpiDataTemporalSummary):
+                 data_orchestrator : EpiDataOrchestrator, 
+                 column_registration : ColumnRegistry,
+                 temporal_summary : EpiDataTemporalSummary):
 
         self.train = PredictionCollection()
         self.val   = PredictionCollection()
@@ -80,25 +73,24 @@ class PredictionManager:
         self._setup_required_columns()
 
     def add_horizon_predictions(self, 
-                                dataset:                    Literal['train','val','test'], 
-                                horizon_df:                 pd.DataFrame, 
-                                horizon:                    int):
+                                dataset : Literal['train','val','test'], 
+                                horizon_df : pd.DataFrame, 
+                                horizon : int):
         """
         Adds a prediction df to the prediction manager
+
         Internally validates columns, temporal-axis, and everything else.
         Internally adds transformed and non-transformed data, as well as
         spatially-aggregated data.
 
         Parameters
         ----------
-        dataset: Literal['train','val','test']
-            which dataset (thus which PredictionCollection) the data belongs in
-        horizon_df: pd.DataFrame
-            the actual data for these parameters
-        horizon: int 
-            the idx of the horizon.
-
-        TODO: validate that the horizon df doesn't exist yet
+        dataset : Literal['train','val','test']
+            Which dataset (thus which ``PredictionCollection``) the data belongs in.
+        horizon_df : pd.DataFrame
+            The actual data for these parameters. Columns are validated.
+        horizon : int 
+            The horizon to store. Starts at zero, irrespective of horizon lead time.
         """
  
         df_validated    = self._validate_columns(horizon_df)
