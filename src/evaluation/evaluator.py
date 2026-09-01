@@ -1,6 +1,5 @@
 from typing import Self, Literal
 import pandas as pd
-from tqdm import tqdm 
 
 from .containers import EvaluationPredictionsCompilation
 from .metricscalculator import MetricsCalculator
@@ -19,18 +18,29 @@ import colorsys
 
 class Evaluator:
     """
-    Evaluates models
+    Evaluates models. 
 
     Parameters
     ----------
-    models: list[BaseModel]
-        list of any models
+    models : list[BaseModel]
+        List of any models to be evaluated.
+    aggregate_seeds : bool = False
+        Whether or not to aggregate metrics (take mean) per different seeds of the same
+        models.
 
     See Also
     --------
-
+    ``EvaluationPredictionsCompilation``
+        Compilation of predictions inside ``Evaluator`` (thus over all models).
+    ``EvaluationPlotter``
+        Plotting - class of metrics- scored.
+    ``MetricsCalculator``
+        Calculator of specified metrics.
+        
     Downstream
     ----------
+    Multiple models are fed into the same ``Evaluator``, which evaluates them in unison,
+    through compiling an ``EvaluationPredictionsCompilation``.    
     """
 
     def __init__(self, 
