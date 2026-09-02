@@ -31,8 +31,6 @@ class GATModule(nn.Module):
         number of sequences in dataloader-snapshot
     horizon_size: int
         number of steps to predict
-    num_quantiles: int
-        number of quantiles to predict
 
     Forward
     -------
@@ -63,8 +61,7 @@ class GATModule(nn.Module):
                  num_features:  int,
                  num_nodes:     int,
                  seq_length:    int,
-                 horizon_size:  int,
-                 num_quantiles: int):
+                 horizon_size:  int):
 
         super().__init__()
 
@@ -82,7 +79,6 @@ class GATModule(nn.Module):
         self.num_nodes      = num_nodes
         self.seq_length     = seq_length
         self.horizon_size   = horizon_size
-        self.num_quantiles  = num_quantiles
 
         flat_features = num_features * seq_length
 
@@ -111,7 +107,7 @@ class GATModule(nn.Module):
         self.dropout= nn.Dropout(self.dropout_p)
 
         # Output projection: linear layer [hidden_size] → [horizon * quantiles]
-        self.output_proj = nn.Linear(hidden_size, horizon_size * num_quantiles)
+        self.output_proj = nn.Linear(hidden_size, horizon_size)
 
     def forward(self,
                 x:              torch.Tensor,
