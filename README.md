@@ -2,6 +2,10 @@
 Systematic evaluation of graph structure choice in Graph Neural Network-based 
 subnational epidemic forecasting. Companion codebase for [paper title].
 
+## To do list
+- refactor code
+- make standalone modules
+
 ## Project Structure
 
 ```
