@@ -10,7 +10,7 @@ from ....utils import PathNotFound
 if TYPE_CHECKING:
     from ....dataloading.epiconfig import EpiConfig
 
-class DeepModelCheckpointMixin:
+class GNNModelCheckpointMixin:
     """ 
     ...
     """    
