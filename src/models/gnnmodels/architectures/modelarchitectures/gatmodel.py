@@ -8,7 +8,7 @@ from ..modules import GATModule
 class GATModel(GNNModel):
     """
     """
-    _expected_dataloadermanager = 'GraphDataBuilder'
+    _expected_databuilder = 'GraphDataBuilder'
     def __init__(self,
                  dataloadermanager: GraphDataBuilder,
                  name:              str           = 'gatmodel',

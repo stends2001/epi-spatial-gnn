@@ -5,6 +5,9 @@ subnational epidemic forecasting. Companion codebase for [paper title].
 ## To do list
 - refactor code
 - make standalone modules
+- make requirements:
+    - pytorch
+    - torch_geometric
 
 ## Project Structure
 
