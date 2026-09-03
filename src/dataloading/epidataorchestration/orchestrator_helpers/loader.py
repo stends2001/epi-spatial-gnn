@@ -124,7 +124,7 @@ class EpiDataReader:
         """          
         filepath = self.epiconfig.path_manager.get('shapefile')
         
-        gdf             = gpd.read_file(filepath)
+        gdf             = gpd.read_file(filepath) # type: ignore
         gdf['key']      = gdf['key'].astype(str)
         return gdf
       
