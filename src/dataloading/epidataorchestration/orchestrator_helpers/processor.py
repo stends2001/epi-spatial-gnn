@@ -1,6 +1,7 @@
 import time
 import pandas as pd
 
+from ..utils import NonExistentAttributeEpiDataContainer
 from ...epiconfig import EpiConfig
 from ..utils.temporal_summary import EpiDataTemporalSummary
 from ..containers import ProcessedEpiData, HarmonizedEpiData
@@ -89,12 +90,16 @@ class EpiDataProcessor:
         population_density_data = None    
 
         if self.config.feature_popsize:
-            if harmonizeddata.population_size is not None:
-                population_size = self._filter_years(harmonizeddata.population_size)
+            if harmonizeddata.population_size is None:
+                raise NonExistentAttributeEpiDataContainer(harmonizeddata.__class__.__name__, 'population_size')
+
+            population_size = self._filter_years(harmonizeddata.population_size)
 
         if self.config.feature_popdens:
-            if harmonizeddata.population_density is not None:
-                population_density_data = self._filter_years(harmonizeddata.population_density)
+            if harmonizeddata.population_density is None:
+                raise NonExistentAttributeEpiDataContainer(harmonizeddata.__class__.__name__, 'population_density')                
+
+            population_density_data = self._filter_years(harmonizeddata.population_density)
         
         processed_data = ProcessedEpiData(epidata = epidata,   
                                           population_size   = population_size,
