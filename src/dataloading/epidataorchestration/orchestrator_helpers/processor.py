@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import time
 import pandas as pd
 
@@ -74,7 +76,7 @@ class EpiDataProcessor:
 
         return dfc
 
-    def orchestrate(self, harmonizeddata: 'HarmonizedEpiData') -> 'ProcessedEpiData':
+    def orchestrate(self, harmonizeddata: HarmonizedEpiData) -> ProcessedEpiData:
         """Function that orchestrates the others"""
         time_start = time.time()
         epidata = self._add_incidence_column(harmonizeddata.epidata.copy())
