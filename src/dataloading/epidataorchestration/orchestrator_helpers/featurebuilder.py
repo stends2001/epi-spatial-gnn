@@ -74,10 +74,12 @@ class EpiFeatureBuilder:
         node_year_key = [self.epiconfig.id_column, 'year']
 
         if self.epiconfig.feature_popsize:
-            df = df.merge(processed_data.population_size, on=node_year_key)
+            if processed_data.population_size is not None:
+                df = df.merge(processed_data.population_size, on=node_year_key)
 
         if self.epiconfig.feature_popdens:
-            df = df.merge(processed_data.population_density, on=node_year_key)
+            if processed_data.population_density is not None:
+                df = df.merge(processed_data.population_density, on=node_year_key)
 
         return df
     

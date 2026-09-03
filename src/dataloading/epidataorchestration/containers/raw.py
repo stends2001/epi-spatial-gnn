@@ -2,7 +2,6 @@ import pandas as pd
 import geopandas as gpd
 from dataclasses import dataclass
 
-from ..utils import NonExistentAttributeEpiDataContainer
 from ....utils.textformatting import checkmark
 
 @dataclass
@@ -39,7 +38,7 @@ class RawEpiData:
         Tokenization map used for the graph structures. For each country/level 
         combination (e.g. Germany NUTS3), there should be a tokenization_map.json saved,
         created by the ``GraphConstruction`` - module.
-    _population_density: pd.DataFrame | None = None
+    population_density: pd.DataFrame | None = None
         Optional population density covering the country over different levels. 
         This attribute is only filled when the attribute ``feature_popdens`` of 
         ``EpiConfig`` is set to ``True``. Expected columns are:
@@ -67,17 +66,7 @@ class RawEpiData:
     region_harmonization : pd.DataFrame    
     tokenization_map : dict[str, int]
     
-    _population_density : pd.DataFrame | None = None
-    
-    @property
-    def population_density(self) -> pd.DataFrame:
-        df = self._population_density
-        if df is None: 
-            raise NonExistentAttributeEpiDataContainer(
-                self.__class__.__name__, 
-                'population_density'
-                )
-        return df          
+    population_density : pd.DataFrame | None = None        
 
     def __repr__(self):
         representation = (f"<{self.__class__.__name__}(disease {checkmark}, "
@@ -86,7 +75,7 @@ class RawEpiData:
                 f"region_harmonization {checkmark}, "
                 f"tokenization_map {checkmark}"                )
         
-        if self._population_density is not None:
+        if self.population_density is not None:
             representation += f", population_density {checkmark}"              
 
         return representation +")>"

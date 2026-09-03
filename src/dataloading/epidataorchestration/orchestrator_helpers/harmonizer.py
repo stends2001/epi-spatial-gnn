@@ -221,8 +221,8 @@ class EpiDataHarmonizer:
         harmdata = HarmonizedEpiData(
             epidata             = epipopdata,
 
-            _population_size    = feature_datasets['population_size_data'],
-            _population_density = feature_datasets['population_density_data']
+            population_size    = feature_datasets['population_size_data'],
+            population_density = feature_datasets['population_density_data']
 
         )
         

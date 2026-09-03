@@ -44,7 +44,7 @@ class EpiDataReader:
             tokenization_map    = self._load_tokenization_map(),
         
             # optional data
-            _population_density  = self._load_population_density()               if self.epiconfig.feature_popdens          else None         
+            population_density  = self._load_population_density()               if self.epiconfig.feature_popdens          else None         
         )
 
         time_end = time.time()

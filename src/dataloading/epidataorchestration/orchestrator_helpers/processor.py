@@ -89,14 +89,16 @@ class EpiDataProcessor:
         population_density_data = None    
 
         if self.config.feature_popsize:
-            population_size = self._filter_years(harmonizeddata.population_size)
+            if harmonizeddata.population_size is not None:
+                population_size = self._filter_years(harmonizeddata.population_size)
 
         if self.config.feature_popdens:
-            population_density_data = self._filter_years(harmonizeddata.population_density)
+            if harmonizeddata.population_density is not None:
+                population_density_data = self._filter_years(harmonizeddata.population_density)
         
         processed_data = ProcessedEpiData(epidata = epidata,   
-                                          _population_size   = population_size,
-                                          _population_density= population_density_data
+                                          population_size   = population_size,
+                                          population_density= population_density_data
                                           )
         time_end = time.time()
 
