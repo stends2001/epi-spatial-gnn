@@ -57,16 +57,23 @@ class EpiDataTransformer:
         self.temporal_summary    = temporal_summary
         self.column_registration = column_registration
 
-    # ── splits ────────────────────────────────────────────────────────────
-
     def _set_splits(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        set split columns:
+        - ``'train'``
+        - ``'val'``
+        - ``'test'``
+        """
         splits = self.temporal_summary.get_target_splits()
+
         df['train'] = df[self.epiconfig.temporal_column] < splits['trainval']
         df['val']   = (df[self.epiconfig.temporal_column] >= splits['trainval']) & \
                       (df[self.epiconfig.temporal_column] < splits['valtest'])
         df['test']  = df[self.epiconfig.temporal_column] >= splits['valtest']
+
         for split_col in ['train', 'val', 'test']:
             self.column_registration.add_column(split_col, 'split')
+
         return df
 
     # ── pass 1: register + apply log ─────────────────────────────────────
@@ -178,7 +185,7 @@ class EpiDataTransformer:
         for column_name in self.column_registration.registered_columns:
 
             col_entry = self.column_registration.get_entry_by_name(column_name)
-            
+
             if not col_entry.transformation:
                 continue
 
