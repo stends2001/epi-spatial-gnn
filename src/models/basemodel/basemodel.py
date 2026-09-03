@@ -71,8 +71,7 @@ class BaseModel(ModelStatusMixin,
 
     def __init__(self, 
                  databuilder: BaseLineDataBuilder | GraphDataBuilder, 
-                 name: str,
-                 verbose: int  = -1):
+                 name: str):
 
         # BaseModel in itself may not be initted
         if self.__class__ is BaseModel:
@@ -82,7 +81,6 @@ class BaseModel(ModelStatusMixin,
         self._set_databuilder_attributes(databuilder)
 
         # static attributes
-        self.verbose = verbose
         self.model_class = self.__class__.__name__
         self.model_color = self._get_model_color()
         self.clean_name = self._get_clean_name()
@@ -95,19 +93,17 @@ class BaseModel(ModelStatusMixin,
         self.predictions = PredictionManager(self.databuilder.dataorchestrator, 
                                              self.column_registration, 
                                              self.temporal_summary)
-        self.weights_manager = None
         
         # Configuration - info
-        self.config_info                = {'name': self.name, 
-                                           'model_class': self.model_class}
+        self.config_info = {'name': self.name, 
+                            'model_class': self.model_class}
 
         self._init_status()
         self._update_status('model_initialized')
         self._print_status_update('model_initialized')
 
     # ======== HIDDEN METHODS ========= #
-    def _set_databuilder_attributes(self, 
-                                   databuilder: BaseLineDataBuilder | GraphDataBuilder):
+    def _set_databuilder_attributes(self, databuilder: BaseLineDataBuilder | GraphDataBuilder):
         """An extention upon init: sets a range of easy to access attributes related to databuilder"""
         self.databuilder = databuilder
         self.epiconfig = self.databuilder.dataorchestrator.config
