@@ -73,8 +73,8 @@ class EpiConfigValidator:
         """
 
         # temporal frequency
-        if self.epiconfig.temporal_frequency not in ['m','w','d']:
-            exceptions.append(EpiConfigLimitationError(f'invalid valid for temporal_frequency (currently). Value must be in ["m","w","d"]'))         
+        if self.epiconfig.temporal_frequency not in ['m','w']:
+            exceptions.append(EpiConfigLimitationError(f'invalid valid for temporal_frequency (currently). Value must be in ["m","w"]'))         
 
         return exceptions
     
@@ -95,9 +95,6 @@ class EpiConfigValidator:
         
         if self.epiconfig.lag_num < 1:
             exceptions.append(EpiConfigValidationError(f"number of lags must be >= 1, got {self.epiconfig.lag_num}"))
-        
-        if self.epiconfig.time_index_d and self.epiconfig.disease != 'covid_daily':
-            exceptions.append(EpiConfigValidationError(f'time_index_d is only relevant to disease covid_daily'))
 
 
         # country-related

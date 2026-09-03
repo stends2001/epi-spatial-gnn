@@ -128,7 +128,7 @@ class EpiConfig:
     disease : Disease   
     
     # ============= TEMPORAL =============
-    temporal_frequency : Literal['m','w','d']= 'w'
+    temporal_frequency : Literal['m','w']= 'w'
     min_date : str = '2011-01-01'
     max_date : str = '2020-06-01'
     split_trainval : str = '2018-06-01'

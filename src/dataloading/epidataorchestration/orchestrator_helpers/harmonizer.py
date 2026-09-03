@@ -4,7 +4,7 @@ import pandas as pd
 import geopandas as gpd
 
 from ...epiconfig import EpiConfig
-from ..utils import berlin_district_ids, berlin_id, EpiDataOrchestrationError, EpiDataTemporalSummary
+from ..utils import berlin_district_ids, berlin_id, EpiDataTemporalSummary
 from ..containers import RawEpiData, HarmonizedEpiData, ContextEpiData
 
 # ============= HARMONIZATION CLASS =============
@@ -92,34 +92,16 @@ class EpiDataHarmonizer:
 
         return pd.merge(epidemiology_df, population_df, on = [f'key','year'])
 
-    def _resample(self, epi_df: pd.DataFrame, temporal_freq: Literal['m','w','d']) -> pd.DataFrame:
+    def _resample(self, epi_df: pd.DataFrame, temporal_freq: Literal['m','w']) -> pd.DataFrame:
         """ 
         resamples timestamp to requested temporal frequency
         """
-        # the only disease with temp freq below w is covid_daily
-        if temporal_freq == 'd':
-            if self.epiconfig.disease == 'covid_daily':
-                resampled_df = epi_df
-            else:
-                raise EpiDataOrchestrationError(f'temporal_freq == "d" is only valid for disease "covid_daily" not for {self.epiconfig.disease}')
-                
-        elif temporal_freq == 'w':
-            if self.epiconfig.disease == 'covid_daily':
-                resampled_df = (
-                    epi_df.set_index(self.epiconfig.temporal_column)
-                    .groupby(f'key')
-                    .resample('W-MON')                                  # survstat system reports weekly data on mondays!
-                    .agg({
-                        'cases':            'sum',
-                        'population_size':  'mean',
-                    })
-                    .reset_index(drop = False)
-                )
-            else:
-                resampled_df = epi_df
+
+        if temporal_freq == 'w':
+            resampled_df = epi_df
 
         # else temporal freq  == m. has been established in epiconfig validation methods
-        else:
+        elif temporal_freq == 'm':
             resampled_df = (
                     epi_df.set_index(self.epiconfig.temporal_column)
                     .groupby(f'key')
