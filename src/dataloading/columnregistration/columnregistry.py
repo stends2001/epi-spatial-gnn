@@ -76,7 +76,7 @@ class ColumnRegistry:
     ...     log_params
     ...     )
     """
-    _entries: list[ColEntry] = field(default_factory=list)
+    _entries: list[ColEntry] = field(default_factory=list[ColEntry])
     
     # ========= ADJUSTING / UPDATING COLUMNREGISTRATION ======= #
     def add_column(self, 
