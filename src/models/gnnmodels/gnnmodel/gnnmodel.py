@@ -1,7 +1,6 @@
 from typing import Self, Union, Type, Any
 import torch 
 from torch.optim.optimizer import Optimizer
-from torch.optim.lr_scheduler import _LRScheduler
 from pathlib import Path 
 import pandas as pd
 
@@ -108,7 +107,7 @@ class GNNModel(
                    model_name:          str,
                    databuilder:   GraphDataBuilder,
                    dir:                 Union[str, Path],
-                   ) -> Type[Self]:
+                   ) -> Self:
         """
         Loads a saved model, and sets model hyper-parameters, global-hyperparameters
         and thus, most importantly, self.model. This function does not, however, 
@@ -183,9 +182,8 @@ class GNNModel(
         instance.config_info['global_hparams']= save_dict['global_hparams']
         instance._update_status('trained')
 
-
         return instance
 
-    def set_model_hparams(self):
+    def set_model_hparams(self) -> None:
         """must be set by subclasses"""
         raise NotImplementedError("Subclass of DeepModel must implement set_model_hparams")      
