@@ -3,13 +3,11 @@ from __future__ import annotations
 from typing import Any, TYPE_CHECKING, Literal
 import pandas as pd
 import torch 
-from tqdm import tqdm
 from torch.optim.optimizer import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
 import seaborn as sns 
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 
 from ..utils import LossManager
 from ...utils import ModelStatus
@@ -25,7 +23,7 @@ Metric = Literal['train_loss', 'val_loss', 'learning_rate']
 
 class GNNModelTrainMixin:
     """ 
-    ...
+    Mixin class to ``GNNModel`` that deals with training of models.    
     """    
     status_dict:        dict[ModelStatus, bool]
     epiconfig:          EpiConfig
@@ -45,6 +43,8 @@ class GNNModelTrainMixin:
 
     def train(self):
         """ 
+        Train model. No arguments needed, but ``model_hparams_set()`` and 
+        ``global_hparams_set()`` both need to have been called.
         """
         self._check_status(['model_hparams_set', 'global_hparams_set'])
   
@@ -59,10 +59,10 @@ class GNNModelTrainMixin:
         patience_counter    = 0
         best_model_state    = None
 
-        list_val_loss       = []
-        list_train_loss     = []
-        list_patience       = []
-        list_lr             = []
+        list_val_loss : list[float]       = []
+        list_train_loss : list[float]     = []
+        list_patience : list[bool]        = []
+        list_lr : list[float]             = []
 
         L_train             = len(train_loader)
         L_val               = len(val_loader)
@@ -158,7 +158,7 @@ class GNNModelTrainMixin:
 
             new_lr = self.optimizer.param_groups[0]['lr']
             
-            line = self._return_verbose_line(repr_epoch, train_loss, val_loss,
+            _ = self._return_verbose_line(repr_epoch, train_loss, val_loss,
                                           "v" if val_improved else None,
                                           None if val_improved else f"{patience_counter}/{self.patience}",
                                           True if current_lr != new_lr else None
@@ -260,7 +260,7 @@ class GNNModelTrainMixin:
     # ======== STUBS ======= #
     def _check_status(self, required_states: list[ModelStatus] | ModelStatus) -> None: ...
     def _update_status(self, status: ModelStatus) -> None: ...
-    def _return_verbose_iter(self) -> tuple[list, range | tqdm]: ...
+    def _return_verbose_iter(self) -> tuple[list[int], range]: ...
     def _return_verbose_line(self, 
                              epoch:         int | None  = None, 
                              train_loss:    float| None= None, 
