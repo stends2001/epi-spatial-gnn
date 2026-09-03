@@ -72,7 +72,7 @@ class EpiDataHarmonizer:
 
         return cases_nuts_aggregated
 
-    def _filter_data_on_level(self, df: pd.DataFrame, drop_level = True) -> pd.DataFrame:
+    def _filter_data_on_level(self, df: pd.DataFrame, drop_level: bool = True) -> pd.DataFrame:
         dfc             = df.copy()
         dfc             = dfc[dfc['level'] == self.epiconfig.level].reset_index(drop = True)
         if drop_level:
