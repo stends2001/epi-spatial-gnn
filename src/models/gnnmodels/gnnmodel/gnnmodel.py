@@ -26,7 +26,50 @@ class GNNModel(
     BaseModel # BaseModel comes last for hierarchy of methods-imported
     ):
     """ 
-    ...
+    Parent class to all GNN model architectures (``GCNModel`` and ``GATModel``).
+    This is a first - order subclass to ``BaseModel``.
+
+    Parameters
+    ----------
+    databuilder : GraphDataBuilder
+        Data builder for the model to train on and predict from.
+    strategy : Strategy
+        Utility class for the training/validation/testing steps.
+    name : str
+        Name of the model.
+
+    See Also
+    --------
+    ``BaseModel``
+        Parent class to all model classes.
+
+    ``Strategy``
+        Utility class for the training/validation/testing steps.
+
+    ``LossManager``
+        Utility class that deals with the definition and usage of loss.
+
+    ``GNNModelInternalsMixin``
+        Mixin class that deals with some internal attributes-setting.
+    ``GNNModelPresentationMixin``
+        Mixin class that deals with representation and print-output.
+    ``GNNModelTrainMixin``
+        Mixin class that deals with the training of models.
+    ``GNNModelForecastMixin``
+        Mixin class that deals with the forecasting of models.
+    ``GNNModelGlobalhParamsMixin``
+        Mixin class that deals with setting and validating the global hyper parameters.
+    ``GNNModelCheckpointMixin``
+        Mixin class that deals with saving of models.
+    
+    Downstream
+    ----------
+    Model classes are sub classes to ``BaseModel``. The first order of sub classes are
+    ``BaseLineModel`` and ``GNNModel``. These in turn, have model-specific subclasses.
+
+    ``GNNModel`` subclasses are ``GATModel`` and ``GCNModel``. Note that the Model
+    architectures are defined in ``../architectures/modules`` and the way that these
+    are used are defined in models, in ``../architectures/modularchitectures``.
     """
     
     _childclasses:  dict[str, Type[Self]] = {}    
@@ -35,7 +78,7 @@ class GNNModel(
     scheduler:      _LRScheduler
 
     def __init__(self, 
-                 dataloadermanager: GraphDataBuilder, 
+                 databuilder: GraphDataBuilder, 
                  strategy: Strategy,
                  name: str):
 
@@ -43,11 +86,10 @@ class GNNModel(
         if self.__class__ is GNNModel:
             raise TypeError("DeepModel cannot be instantiated directly")
 
-        super().__init__(dataloadermanager, name)        
+        super().__init__(databuilder, name)        
     
         self.evaluation_datasets                            = {}
         self._residual_quantiles: dict[tuple[int, int], dict[int, float]] = {}
-
 
         # using hidden methods in DeepModelInternalsMixin, set attributes
         self._set_device()
@@ -64,7 +106,7 @@ class GNNModel(
     @classmethod
     def load_model(cls,
                    model_name:          str,
-                   dataloadermanager:   GraphDataBuilder,
+                   databuilder:   GraphDataBuilder,
                    dir:                 Union[str, Path],
                    ) -> Type[Self]:
         """
@@ -116,14 +158,14 @@ class GNNModel(
         child_cls = cls._childclasses[model_key]
         instance  = child_cls(
             name              = save_dict['name'],
-            dataloadermanager = dataloadermanager,
+            databuilder = GraphDataBuilder,
         ) # type: ignore
         
-        dataloadermanager.dataorchestrator.config.assert_equals(save_dict['epiconfig_summary'], level = 1)
+        databuilder.dataorchestrator.config.assert_equals(save_dict['epiconfig_summary'], level = 1)
 
         # compare between raw input timestamps, not the preprocessed ones in temporal_summary
         saved_test_start  = pd.Timestamp(save_dict['epiconfig_summary']['split_valtest'])
-        new_train_end     = pd.Timestamp(dataloadermanager.dataorchestrator.config.split_valtest)
+        new_train_end     = pd.Timestamp(databuilder.dataorchestrator.config.split_valtest)
 
         if new_train_end > saved_test_start:
             raise ValueError(
