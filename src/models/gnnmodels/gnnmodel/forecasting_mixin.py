@@ -19,7 +19,9 @@ if TYPE_CHECKING:
     from ....dataloading.epidataorchestration.containers import ContextEpiData    
 
 class GNNModelForecastMixin:
- 
+    """
+    Mixin class to ``GNNModel`` that deals with forecasting of models.    
+    """
     model:              torch.nn.Module
     dataloadermanager:  GraphDataBuilder
     strategy:           Strategy
