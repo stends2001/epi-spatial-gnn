@@ -24,11 +24,6 @@ class SeasonalAverage(BaseLineModel):
 
         self.seasonal_averages = self._get_temporal_averages(databuilder.dataloader_main)
 
-        # Following statuses are not applicable
-        self.status_dict.pop('model_hparams_set')
-        self.status_dict.pop('global_hparams_set')
-        self.status_dict.pop('trained') 
-
     def forecast(self, dataset: DataSetSplit = 'test') -> None:
         """
         Forecast for set dataset

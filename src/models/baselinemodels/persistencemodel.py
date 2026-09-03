@@ -20,11 +20,6 @@ class Persistence(BaseLineModel):
         
         super().__init__(databuilder, name)
 
-        # Following statuses are not applicable
-        self.status_dict.pop('model_hparams_set')
-        self.status_dict.pop('global_hparams_set')
-        self.status_dict.pop('trained')
-
     def forecast(self, dataset: DataSetSplit = 'test') -> None:
         """
         Forecast for set dataset

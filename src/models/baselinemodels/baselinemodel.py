@@ -39,6 +39,11 @@ class BaseLineModel(BaseModel):
         
         super().__init__(databuilder,  name)
 
+        # Following statuses are not applicable
+        self.status_dict.pop('model_hparams_set')
+        self.status_dict.pop('global_hparams_set')
+        self.status_dict.pop('trained') 
+
     @abstractmethod
     def forecast(self, dataset: Literal['train','val','test'] = 'test') -> None:
         pass
