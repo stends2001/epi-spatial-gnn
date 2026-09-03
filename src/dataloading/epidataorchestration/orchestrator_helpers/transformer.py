@@ -11,7 +11,7 @@ from ..utils.normalization import (
     apply_log, apply_zscore, apply_minmax
 )
 from ...columnregistration import (
-    LogParams, ZScoreParams, MinMaxParams, 
+    LogParams,
     TransformationParams, ColumnRegistry, ColEntry
 )
 
@@ -213,7 +213,7 @@ class EpiDataTransformer:
 
     # ── orchestrate ───────────────────────────────────────────────────────
 
-    def orchestrate(self, feature_data: 'FeatureEpiData') -> 'TransformedEpiData':
+    def orchestrate(self, feature_data: FeatureEpiData) -> TransformedEpiData:
         time_start = time.time()
 
         df = self._set_splits(feature_data.data.copy())
