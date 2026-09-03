@@ -38,14 +38,16 @@ class Persistence(BaseLineModel):
             ).copy()
 
             # group by, and shift 'target' by ``timeshift_num``.
+            # that is the prediction: the shifted 'target'.
             persistence_pred = evaluation_df.groupby(
                 self.epiconfig.id_column
                 )['target'].shift(timeshift_num)
 
             evaluation_df[self.pred_col] = persistence_pred
 
+            # filter on dataset train/val/test
             evaluation_df = evaluation_df[evaluation_df[dataset]]
-            evaluation_dataset  = evaluation_df[
+            evaluation_dataset = evaluation_df[
                 [self.epiconfig.id_column, self.epiconfig.temporal_column, 'target'] + [self.pred_col]
                 ]
 
