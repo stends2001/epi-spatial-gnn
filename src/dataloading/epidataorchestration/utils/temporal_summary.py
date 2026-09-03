@@ -7,7 +7,7 @@ from .exceptions import TemporalError
 
 # ==== helper functions ===== #
 
-def convert_to_next_monday(date: datetime, day_int = 0) -> datetime:
+def convert_to_next_monday(date: datetime, day_int : int = 0) -> datetime:
     """
     Returns datetime object shifted to the next version of day int where 0 means Monday
     """
