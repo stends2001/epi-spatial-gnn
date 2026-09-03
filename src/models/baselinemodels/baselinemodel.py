@@ -76,12 +76,16 @@ class BaseLineModel(BaseModel):
         df_transformed = df.copy()
 
         for col in columns:
+
             if col not in df_transformed.columns:
                 continue
+
             if params.log is not None:
                 df_transformed = apply_log(df_transformed, col, params.log)
+
             if params.zscore is not None:
                 df_transformed = apply_zscore(df_transformed, col, params.zscore)
+
             elif params.minmax is not None:
                 df_transformed = apply_minmax(df_transformed, col, params.minmax)
 
