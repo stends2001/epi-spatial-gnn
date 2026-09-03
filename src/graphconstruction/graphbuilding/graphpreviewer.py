@@ -14,10 +14,27 @@ from ..graphobjects import GraphStructure, GraphObject
 
 class GraphViewer:
     """ 
+    Class to preview GraphStructures with.
+
+    Parameters
+    ----------
+    background_shapedata : gpd.GeoDataFrame
+        Shapedata for the entire country at all admin levels.
+    level_shapedata : gpd.GeoDataFrame
+        Shapedata of tokenized admin level.
+    country : Country
+        Country studied.
+    level : AdminLevel
+        Admin level studied.
+
+    Downstream
+    ----------
+    ``GraphManager`` manages the creation of Graph Objects. It also allows one to preview graphs,
+    since its ``preview()`` function interacts with ``GraphViewer``. Each ``GraphManager`` has a
+    single ``GraphViewer`` class associated with attribute ``previewer``.
     """
     level: AdminLevel
     country: Country
-
     def __init__(self,
                  background_shapedata:  gpd.GeoDataFrame,
                  level_shapedata:       gpd.GeoDataFrame,
@@ -34,18 +51,24 @@ class GraphViewer:
     # ======== METHODS ========= #
     def view(self, 
              graph_structure:   GraphStructure, 
-             variable:          Literal['edge_weights','network','degree','strength','strength_vs_degree'],
+             variable:          Literal['network','degree'],
              locality:          Literal['local','global'],
              plot_type:         Literal['histogram','map'],
              neighborhood:      int | None,
              connections_type:  Literal['in','out'] | None,
              *args, **kwargs) -> tuple[Figure, Axes]:    
         """        
-        Main function of GraphViewer
+        Main function of GraphViewer.
 
-        See Also
+        While this function may also be called through the ``GraphManager`` using its
+        ``preview()`` function, using the ``Graphviewer`` by itself allows one to preview
+        any GraphStructe (not GraphObject!).
+
+        Examples
         --------
-        for more information, please see `GraphManager.preview()`
+        >>> pm = PathManager()
+        ... graph3 = GraphObject.load(pm.data / 'germany/graphs/nuts3/graph3/')
+        ... gm.previewer.view(graph3.graph,'degree','global','map', None,None)
         """
         fig:    Figure
         ax:     Axes
@@ -70,60 +93,51 @@ class GraphViewer:
         # decide on plotting - function
         match (variable, plot_type):
 
-            case ('edge_weights', 'histogram'):
-                self._plot_weight_histogram_on_ax(weight_to_plot, ax=ax)
-
-                title = f"Edge-weight distribution"
-
             case ('degree', 'histogram'):    
-                self._plot_degree_histogram_on_ax(index_to_plot, ax, connections_type)
+                self._plot_degree_histogram_on_ax(index_to_plot, 
+                                                  ax, 
+                                                  connections_type)
 
-                title = f"Degree distribution"        
-
-            case ('strength', 'histogram'):    
-                self._plot_degree_histogram_on_ax(index_to_plot, ax, connections_type)
-
-                title = f"Strength distribution"                           
-
-            case ('strength_vs_degree', _):
-                self._plot_degree_vs_strength_on_ax(index_to_plot, weight_to_plot, ax, connections_type)
-
-                title = f"Degree vs Strength"                   
+                title = f"Degree distribution"                       
 
             case ('network', 'map'):
-                self._plot_network_lines_on_ax(index_to_plot, locality, ax)
-                self._plot_geompoints_on_ax(neighborhood = neighborhood, node_geoms = True, neighbor_geoms = True, isolate_geoms = True, edge_index = index_to_plot, ax = ax)
-                self._update_map_layout(neighborhood = neighborhood, node_geoms = True, neighbor_geoms = True, isolate_geoms = True, ax = ax)                
+                self._plot_network_lines_on_ax(index_to_plot, 
+                                               locality, 
+                                               ax)
+
+                self._plot_geompoints_on_ax(neighborhood = neighborhood, 
+                                            node_geoms = True, 
+                                            neighbor_geoms = True, 
+                                            isolate_geoms = True, 
+                                            edge_index = index_to_plot, 
+                                            ax = ax)
+                
+                self._update_map_layout(neighborhood = neighborhood, 
+                                        node_geoms = True, 
+                                        neighbor_geoms = True, 
+                                        isolate_geoms = True, 
+                                        ax = ax)                
 
                 title = f"Network"
 
             case ('degree', 'map'):
-                self._plot_degree_map_on_ax(index_to_plot, connections_type, ax, fig)
-                self._update_map_layout(neighborhood = neighborhood, node_geoms = False, neighbor_geoms = False, isolate_geoms = False, ax = ax)
+                self._plot_degree_map_on_ax(index_to_plot, 
+                                            connections_type, 
+                                            ax, 
+                                            fig)
+                
+                self._update_map_layout(neighborhood = neighborhood, 
+                                        node_geoms = False, 
+                                        neighbor_geoms = False, 
+                                        isolate_geoms = False, 
+                                        ax = ax)
 
                 title = f"Degree distribution"
 
-            case ('strength', 'map'):
-                self._plot_strength_map_on_ax(index_to_plot, weight_to_plot, connections_type, ax, fig)
-                self._update_map_layout(neighborhood = neighborhood, node_geoms = False, neighbor_geoms = False, isolate_geoms = False, ax = ax)
-
-                title = f"Strength distribution"                
-
-            case ('edge_weights', 'map'):   
-                
-                if neighborhood is None:
-                    raise ValueError('expected neighborhood for combination of ("edge_weights","map)')
-                if connections_type is None:
-                    raise ValueError('expected connections_type for combination of ("edge_weights","map)')                
-
-                self._plot_neighborhood_weights_map_on_ax(index_to_plot, weight_to_plot, neighborhood, connections_type, ax, fig)
-                self._plot_geompoints_on_ax(neighborhood, node_geoms = True, neighbor_geoms = True, isolate_geoms = False, edge_index = index_to_plot, ax = ax)
-                self._update_map_layout(neighborhood = neighborhood, node_geoms = True, neighbor_geoms = True, isolate_geoms = False, ax = ax)                
-
-                title = f"Edge-weight distribution"
-
             case _:
-                raise NotImplementedError(f'No implementation for: {(variable, locality, plot_type, neighborhood, connections_type)}')
+                raise NotImplementedError(
+                    f'No implementation for: {(variable, locality, plot_type, neighborhood, connections_type)}'
+                    )
 
 
         locality_part_of_title = f" - {locality}"
@@ -195,7 +209,9 @@ class GraphViewer:
         return exclude_levels
 
     # compute - in / out degree
-    def _compute_degree(self, edge_index: torch.Tensor, connections_type: Literal['in', 'out'] | None = None) -> torch.Tensor:
+    def _compute_degree(self, 
+                        edge_index: torch.Tensor, 
+                        connections_type: Literal['in', 'out'] | None = None) -> torch.Tensor:
         """
         Computes per-node degree from edge_index 
         
@@ -225,40 +241,6 @@ class GraphViewer:
 
         return degree
  
-     # compute - in / out degree
-    
-    # compute - in / out strength
-    def _compute_strength(self, edge_index: torch.Tensor, edge_weight: torch.Tensor, connections_type: Literal['in', 'out'] | None = None) -> torch.Tensor:
-        """
-        Computes per-node strength from edge_index 
-        
-        Parameters
-        ----------
-        edge_index: torch.Tensor
-
-        edge_weight: torch.Tensor
-
-        connections_type: Optional[Literal['in','out']] = None
-            - 'in':  count incoming edges per node
-            - 'out': count outgoing edges per node
-            - None:  sum of both
-        """
-        num_nodes = int(edge_index.max().item() + 1)
-        strength  = torch.zeros(num_nodes)
-
-        match connections_type:
-            case 'in':
-                strength.scatter_add_(0, edge_index[1], edge_weight)
-            case 'out':
-                strength.scatter_add_(0, edge_index[0], edge_weight)
-            case None:
-                strength.scatter_add_(0, edge_index[1], edge_weight)
-                strength.scatter_add_(0, edge_index[0], edge_weight)
-            case _:
-                assert_never(connections_type)
-
-        return strength
- 
     # ==== PLOTTERS
 
     def _update_title(self, title: str, ax: Axes):
@@ -266,36 +248,20 @@ class GraphViewer:
 
     def _set_style_defaults(self):
 
-        self.map_level_patch_styles: dict[str, dict[str, dict]]= {
-            'netherlands': {
-                'lau':      dict(facecolor='none',      edgecolor='darkgrey',   linewidth=0.2,  zorder = 2),              
-                'ggd':      dict(facecolor='none',      edgecolor='black',      linewidth=0.3,  zorder = 3),  
-                'nuts2':    dict(facecolor='none',      edgecolor='black',      linewidth=1,    zorder = 4),                       
-                'nuts0':    dict(facecolor='none',      edgecolor='black',      linewidth=2,    zorder = 5),    
-            },
-
-            'germany' : {
+        self.map_level_patch_styles: dict[str, dict[str, Any]]= {
                 'nuts3' :       dict(facecolor='none',      edgecolor='darkgrey',linewidth=0.2, zorder = 2),
                 'nuts2' :       dict(facecolor='none',      edgecolor='black',  linewidth = 0.3,zorder = 3),        
                 'nuts1' :       dict(facecolor='none',      edgecolor='black',  linewidth = 1,  zorder = 4),        
                 'nuts0' :       dict(facecolor='none',      edgecolor='black',  linewidth = 2,  zorder = 5),        
-            },
+        }    
 
-            'hungary' : {
-                'nuts3' :       dict(facecolor='none',      edgecolor='darkgrey',linewidth=0.2, zorder = 2),
-                'nuts2' :       dict(facecolor='none',      edgecolor='black',  linewidth = 0.3,zorder = 3),        
-                'nuts1' :       dict(facecolor='none',      edgecolor='black',  linewidth = 1,  zorder = 4),        
-                'nuts0' :       dict(facecolor='none',      edgecolor='black',  linewidth = 2,  zorder = 5),        
-            }
-        }        
-
-        self.node_class_styles: dict[str, dict] = {
+        self.node_class_styles: dict[str, dict[str, Any]] = {
             'node'      :   dict(markersize=75, edgecolor='black', color='red',                 zorder = 7),
             'neighbor'  :   dict(markersize=45, edgecolor='black', color='orange',              zorder = 8),
             'isolate'   :   dict(markersize=25, edgecolor='black', color='lightgrey',           zorder = 9)
         }
 
-        self.node_class_styles_legend: dict[str, dict] = {
+        self.node_class_styles_legend: dict[str, dict[str, Any]] = {
             'node'      :   dict(marker = 'o', markersize=10, markeredgecolor='black', label = 'node',      markerfacecolor='red',      linestyle = 'none'),
             'neighbor'  :   dict(marker = 'o', markersize=10, markeredgecolor='black', label = 'neighbor',  markerfacecolor='orange',   linestyle = 'none'),
             'isolate'   :   dict(marker = 'o', markersize=10, markeredgecolor='black', label = 'isolate',   markerfacecolor='lightgrey',linestyle = 'none')
@@ -311,21 +277,6 @@ class GraphViewer:
         ax.set_ylabel('frequency')
         ax.set_xlabel('connections')
 
-    def _plot_strength_histogram_on_ax(self, edge_index: torch.Tensor, edge_weight: torch.Tensor, ax: Axes, connections_type: Literal['in', 'out'] | None = None):
-        """calling upon `_compute_stregnth()`, plot histogram of number of connections"""
-        strength = self._compute_strength(edge_index, edge_weight, connections_type)
-        bins   = np.arange(0, strength.max().item() + 2) - 0.5
-
-        sns.histplot(strength.numpy(), ax=ax, bins=bins)
-        ax.set_ylabel('frequency')
-        ax.set_xlabel('strength')
-
-    def _plot_weight_histogram_on_ax(self, edge_weight: torch.Tensor, ax: Axes):
-        """plots distribution of given edge - weights"""
-        sns.histplot(edge_weight.numpy(), ax = ax)
-        ax.set_xlabel("weight")
-        ax.set_ylabel("frequency")
-
     # maps
     def _plot_background_map_on_ax(self, ax: Axes):
         """plots the background map, which is basically al geographical levels, exlcuding the ones found from `_get_level_to_exclude()`"""
@@ -337,21 +288,18 @@ class GraphViewer:
 
         main_level          = self.level
         
-        if self.country.lower() not in self.map_level_patch_styles:
-            raise ValueError(f'didnt find any styles for country {self.country.lower()}')
-        
-        if main_level not in self.map_level_patch_styles[self.country.lower()]:
+        if main_level not in self.map_level_patch_styles:
             raise ValueError(f'didnt find any styles for level {main_level} for country {self.country.lower()}')            
 
-        country_style   = self.map_level_patch_styles[self.country.lower()]
-        main_level_style= country_style[main_level].copy()
+        style   = self.map_level_patch_styles
+        main_level_style= style[main_level].copy()
         level_shape.plot(ax= ax, **main_level_style)
 
         level_shape_points  = level_shape.copy()
         level_shape_points['geometry'] = level_shape_points.representative_point()
 
         # looping over levels and associated style
-        for background_level, level_style in country_style.items():
+        for background_level, level_style in style.items():
 
             # if this level is inside the shapefile (after exclusion)
             if background_level and background_level in background_shape['level'].unique():
@@ -364,9 +312,9 @@ class GraphViewer:
 
         # legend
         handles: list[Line2D | Patch] = []     
-        country_style   = self.map_level_patch_styles[self.country.lower()]
+        style   = self.map_level_patch_styles
         # looping over levels and associated style
-        for background_level, level_style in country_style.items():
+        for background_level, level_style in style.items():
 
             # if this level is inside the shapefile (after exclusion)
             if background_level:
@@ -511,127 +459,3 @@ class GraphViewer:
         )
         mappable = ax.collections[-1] 
         fig.colorbar(mappable, ax=ax, label=cbar_title, shrink=0.5)
-  
-    def _plot_strength_map_on_ax(self, edge_index: torch.Tensor, edge_weight: torch.Tensor, connections_type: Literal['in', 'out'] | None, ax: Axes, fig: Figure):
-        """plots connections-degree on map. Depending on in/out or None (in+out)"""
-
-        strength = self._compute_strength(edge_index, edge_weight, connections_type)
-        cbar_title= 'Strength'
-
-        shape          = self.level_shapedata.copy()
-        shape['strength'] = shape['node'].apply(
-            lambda n: strength[n].item() if n < len(strength) else 0
-        )
-
-        shape.plot(
-            column='strength',
-            cmap='Greens',
-            ax=ax,
-            legend=False,
-            legend_kwds={'label': cbar_title, 'orientation': 'vertical'},
-            edgecolor='darkgrey',
-            linewidth=0.3,
-            zorder = 1
-        )
-        mappable = ax.collections[-1] 
-        fig.colorbar(mappable, ax=ax, label=cbar_title, shrink=0.5)
-  
-    def _plot_neighborhood_weights_map_on_ax(self, edge_index: torch.Tensor, edge_weight: torch.Tensor, neighborhood: int, connections_type: Literal['in', 'out'], ax: Axes, fig: Figure):
-        """colorbar - scale of weights within selected neighborhood"""
-        src, dst = edge_index
-
-        match connections_type:
-            case 'out':
-                neighbour_nodes = dst.tolist()
-            case 'in':
-                neighbour_nodes = src.tolist()
-            case _:
-                assert_never(connections_type)
-
-        cbar_title = 'edge-weight'
-
-        shape           = self.level_shapedata.copy()
-        weight_map      = dict(zip(neighbour_nodes, edge_weight.tolist()))
-        shape['weight'] = shape['node'].map(weight_map)
-
-        # Unrelated regions
-        shape[shape['weight'].isna()].plot(
-            ax=ax, facecolor='whitesmoke', edgecolor='black', linewidth=0.3
-        )
-
-        # Neighbour regions
-        neighbour_shape = shape[shape['weight'].notna()]
-        if not neighbour_shape.empty:
-            neighbour_shape.plot(
-                column='weight',
-                cmap='Purples',
-                ax=ax,
-                legend=False,        # We'll add colorbar manually
-                edgecolor='black',
-                linewidth=1,
-                zorder=1,
-                vmin=0               # Ensure colormap starts at 0
-            )
-
-            # Grab the last collection (the PolyCollection) as the mappable
-            mappable = ax.collections[-1]  
-
-            # Add colorbar
-            fig.colorbar(mappable, ax=ax, label=cbar_title, shrink=0.5)
-
-        # Focal node
-        focal = shape[shape['node'] == neighborhood]
-        if not focal.empty:
-            focal.plot(ax=ax, facecolor="#4FA54F", edgecolor='black', linewidth=1.0)
-
-    # Others
-    def _plot_degree_vs_strength_on_ax(self,
-        edge_index: torch.Tensor, 
-        edge_weight: torch.Tensor,
-        ax: Axes,
-        connections_type: Literal['in','out'] | None = None,
-        log_scale: bool = True
-        ):
-
-        degree  = self._compute_degree(edge_index, connections_type)
-        strength= self._compute_strength(edge_index, edge_weight, connections_type)        
-
-        x = degree.numpy().astype(float)
-        y = strength.numpy()
-
-        # =========== REGRESSION =========== #
-        mask        = np.isfinite(x) & np.isfinite(y)
-        x_valid     = x[mask]
-        y_valid     = y[mask]        
-
-        # linear
-        linear_corr                 = np.corrcoef(x_valid, y_valid)[0, 1]
-        slope_lin, intercept_lin    = np.polyfit(x_valid, y_valid, 1)
-        x_range                     = np.linspace(x_valid.min(), x_valid.max(), 100) 
-        y_lin                       = slope_lin * x_range + intercept_lin
-
-        # ========= PLOTTING ======== #
-
-        scatter_kwargs: dict[str, Any] = dict(alpha=0.7, edgecolors='black', linewidths=0.3, s=40)
-        ax.scatter(x, y, **scatter_kwargs)
-
-        if log_scale:
-            ax.set_yscale('log')
-        
-        ax.plot(
-            x_range, y_lin,
-            color='black', linestyle='--', linewidth=1,
-            label=f'lin fit: r={linear_corr:.2f}'
-        )        
-
-    # reference line through origin — slope = mean weight per edge 
-        mean_weight_per_edge = (y / x.clip(min=1e-9)).mean() 
-        ax.plot(x_range, mean_weight_per_edge * x_range, 
-                color='grey', linestyle='--', linewidth=1, 
-                label=f'mean weight/edge = {mean_weight_per_edge:.2f}'
-        )
-
-        ax.legend()
-        ax.grid(alpha=0.3)
-        ax.set_xlabel('degree')
-        ax.set_ylabel('strength')
