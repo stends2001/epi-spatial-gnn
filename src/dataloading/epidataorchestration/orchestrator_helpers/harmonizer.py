@@ -151,9 +151,9 @@ class EpiDataHarmonizer:
 
         return dfc  
 
-    def _ensure_geodataframe(self, df: pd.DataFrame) -> gpd.GeoDataFrame:
-        if isinstance(df, pd.DataFrame):
-            df = gpd.GeoDataFrame(df)
+    def _ensure_geodataframe(self, df: pd.DataFrame | gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+        """turn possible pandas dataframe into geopandas dataframe"""
+        df = gpd.GeoDataFrame(df)
         return df
 
     def _get_keynames(self, df: pd.DataFrame):
