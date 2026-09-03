@@ -95,7 +95,10 @@ class EpiDataTransformer:
         """Apply log to every column whose TransformationParams has log set."""
         out = df.copy()
 
-        for col_entry in self.column_registration._entries:
+        for column_name in self.column_registration.registered_columns:
+
+            col_entry = self.column_registration.get_entry_by_name(column_name)
+
             if not col_entry.transformation:
                 continue
 
@@ -123,7 +126,10 @@ class EpiDataTransformer:
             )
 
         # first pass: columns that normalise independently ('self')
-        for col_entry in self.column_registration._entries:
+        for column_name in self.column_registration.registered_columns:
+
+            col_entry = self.column_registration.get_entry_by_name(column_name)
+
             if not col_entry.transformation:
                 continue
             if col_entry.transformation_group != 'self':
@@ -139,7 +145,10 @@ class EpiDataTransformer:
             )
 
         # second pass: columns that follow a reference column
-        for col_entry in self.column_registration._entries:
+        for column_name in self.column_registration.registered_columns:
+
+            col_entry = self.column_registration.get_entry_by_name(column_name)
+
             if not col_entry.transformation:
                 continue
             if col_entry.transformation_group in (None, 'self'):
@@ -166,7 +175,10 @@ class EpiDataTransformer:
         """Apply stored zscore/minmax params to all columns that need it."""
         out = df.copy()
 
-        for col_entry in self.column_registration._entries:
+        for column_name in self.column_registration.registered_columns:
+
+            col_entry = self.column_registration.get_entry_by_name(column_name)
+            
             if not col_entry.transformation:
                 continue
 
