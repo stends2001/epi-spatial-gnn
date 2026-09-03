@@ -1,6 +1,7 @@
 from typing import Self, Union, Type, Any
 import torch 
 from torch.optim.optimizer import Optimizer
+from torch.optim.lr_scheduler import _LRScheduler
 from pathlib import Path 
 import pandas as pd
 
