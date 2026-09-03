@@ -15,7 +15,8 @@ if TYPE_CHECKING:
 
 class GNNModelGlobalhParamsMixin:
     """ 
-    ...
+    Mixin class to ``GNNModel`` that deals with setting and validating of global
+    hyperparameters.    
     """    
     status_dict:        dict[ModelStatus, bool]
     epiconfig:          EpiConfig
@@ -40,22 +41,20 @@ class GNNModelGlobalhParamsMixin:
         
         Parameters
         ---------
-        lr: float = 0.001
-            learning rate.
-        n_epochs: int = 5
-            number of epochs to train the model.
-        patience: int = 15
-            number of epochs without improvement before interrupting training.
+        lr : float = 0.001
+            Learning rate.
+        n_epochs : int = 5
+            Number of epochs to train the model.
+        patience : int = 15
+            Number of epochs without improvement before interrupting training.
         min_delta: float = 1e-4                     
-            minimal change in loss to consider 'improvement'.
+            Minimal change in loss to consider 'improvement'.
         optimizer: str = 'adam'
-            optimizer to use when training. Options can be found in `_get_optimizer()`.
+            Optimizer to use when training. Options can be found in `_get_optimizer()`.
         loss: str = 'mse'                          
-            loss to use when training. Options can be found in `LossHandler`.
-        scheduler: str = 'step'
-            scheduler to use when training. Options can be found in `_get_scheduler()`.
-
-        #### kwargs
+            Loss to use when training. Options can be found in `LossHandler`.
+        Scheduler: str = 'step'
+            Scheduler to use when training. Options can be found in `_get_scheduler()`.
         optimizer_kwargs:Optional[Dict[str, Any]] = None  
             any kwargs relevant to optimizer                         
         scheduler_kwargs:Optional[Dict[str, Any]] = None
@@ -63,7 +62,7 @@ class GNNModelGlobalhParamsMixin:
         """
         self._check_status(['model_hparams_set'])
 
-        global_hparams_config = {
+        global_hparams_config: dict[str, Any] = {
             'lr'                : lr,
             'n_epochs'          : n_epochs,
             'patience'          : patience,
@@ -91,7 +90,7 @@ class GNNModelGlobalhParamsMixin:
         
         # ==== SCHEDULER ====== #
         if scheduler_kwargs is None:
-            default_scheduler_kwargs = {
+            default_scheduler_kwargs : dict[str, Any] = {
                 'step':        {'step_size': 15, 'gamma': 0.8},
                 'exponential': {'gamma': 0.95},
                 'cosine':      {'T_max': 50},
@@ -114,7 +113,7 @@ class GNNModelGlobalhParamsMixin:
         self._check_status(['model_hparams_set'])   
 
         # pylance struggles with torch typing?
-        optimizer_map = {
+        optimizer_map : dict[str, Any] = {
             'adam':    optim.Adam,     # type: ignore
             'adamw':   optim.AdamW,    # type: ignore
             'sgd':     optim.SGD,      # type: ignore
@@ -134,7 +133,7 @@ class GNNModelGlobalhParamsMixin:
         
         self._check_status(['model_hparams_set'])
         
-        scheduler_map = {
+        scheduler_map : dict[str, Any] = {
             'step':        torch.optim.lr_scheduler.StepLR,
             'exponential': torch.optim.lr_scheduler.ExponentialLR,
             'cosine':      torch.optim.lr_scheduler.CosineAnnealingLR,
