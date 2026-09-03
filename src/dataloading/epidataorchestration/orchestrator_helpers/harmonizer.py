@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import time
 from typing import Literal
 import pandas as pd
@@ -35,27 +37,32 @@ class EpiDataHarmonizer:
     for a single stage in the pipeline of getting model-ready datasets. 
     ``EpiDataHarmonizer`` is the second one.
     """
-    def __init__(self, epiconfig: EpiConfig):
+    def __init__(self, epiconfig : EpiConfig):
         self.epiconfig = epiconfig   
 
-    def _mutate_berlin_districts(self, epidemiology_df: pd.DataFrame) -> pd.DataFrame:
+    def _mutate_berlin_districts(self, epidemiology_df : pd.DataFrame) -> pd.DataFrame:
         """
         Mutates all NUTS3 values of the Berlin districts into Berlin key (``'11000'``) 
         for the subsequent aggregation onto nuts3/nuts2/nuts1 levels.
         """
+
+        # change the berlin-districts key to the merged-Berlin key
         epidemiology_df.loc[epidemiology_df['nuts3_key'].isin(berlin_district_ids), 'nuts3_key'] = berlin_id
 
         return epidemiology_df
 
-    def _add_key_column(self, epi_df: pd.DataFrame, regio_harm: pd.DataFrame) -> pd.DataFrame:
-        """adds key column"""
+    def _add_key_column(self, epi_df : pd.DataFrame, regio_harm : pd.DataFrame) -> pd.DataFrame:
+        """adds key column by merging onto harmonization table"""
 
         regio_harm_cp = regio_harm.copy()
 
         merge_key = 'nuts3_key'
 
+        # if admininistrative level is nuts3:
         if merge_key != f'{self.epiconfig.level}_key':
             regio_harm_cp = regio_harm_cp.copy()[[merge_key,f'{self.epiconfig.level}_key']].rename(columns = {f'{self.epiconfig.level}_key' : 'key'})
+
+        # if administrative level is nuts1 or nuts2
         else:
             regio_harm_cp       = regio_harm_cp.copy()[[merge_key]]
             regio_harm_cp['key']= regio_harm_cp[merge_key]         
@@ -67,40 +74,46 @@ class EpiDataHarmonizer:
 
     def _aggregate_cases(self, epidemiology_df: pd.DataFrame) -> pd.DataFrame:
         """aggregates epidemiology and population data per nuts level"""
-        cases_nuts_aggregated = epidemiology_df.groupby(['timestamp', 'key']).aggregate({'cases':'sum'}).reset_index()     
+
+        cases_nuts_aggregated = (
+            epidemiology_df.groupby([self.epiconfig.temporal_column, 'key'])
+            .aggregate({'cases':'sum'}
+            ).reset_index())
 
 
         return cases_nuts_aggregated
 
     def _filter_data_on_level(self, df: pd.DataFrame, drop_level: bool = True) -> pd.DataFrame:
-        dfc             = df.copy()
-        dfc             = dfc[dfc['level'] == self.epiconfig.level].reset_index(drop = True)
+        """filter ``'level'`` coluomn"""
+
+        dfc = df.copy()
+        dfc = dfc[dfc['level'] == self.epiconfig.level].reset_index(drop = True)
+
         if drop_level:
             dfc = dfc.drop(columns = ['level'])
+
         return dfc
 
     def _set_year_col(self, df: pd.DataFrame) -> pd.DataFrame:
-        df['year'] = df['timestamp'].dt.year 
+        """create year column based on timestamp"""
+        df['year'] = df[self.epiconfig.temporal_column].dt.year 
         return df
 
-    def _merge_epipopdata(self, epidemiology_df: pd.DataFrame, population_df: pd.DataFrame) -> pd.DataFrame:
+    def _merge_epipopdata(self, epidemiology_df : pd.DataFrame, population_df : pd.DataFrame) -> pd.DataFrame:
         """
         merge epidemiology with population data, by extracting the year from epidemiology data. 
-        The year column is dropped
         """
-
-
         return pd.merge(epidemiology_df, population_df, on = [f'key','year'])
 
-    def _resample(self, epi_df: pd.DataFrame, temporal_freq: Literal['m','w']) -> pd.DataFrame:
+    def _resample(self, epi_df : pd.DataFrame, temporal_freq : Literal['m','w']) -> pd.DataFrame:
         """ 
         resamples timestamp to requested temporal frequency
         """
-
+        # weekly frequency: no change
         if temporal_freq == 'w':
             resampled_df = epi_df
 
-        # else temporal freq  == m. has been established in epiconfig validation methods
+        # monthly frequenty: resample cases on month
         elif temporal_freq == 'm':
             resampled_df = (
                     epi_df.set_index(self.epiconfig.temporal_column)
@@ -118,14 +131,12 @@ class EpiDataHarmonizer:
         resampled_df                        = resampled_df[[self.epiconfig.temporal_column,f'key','cases','year','population_size']]
         return resampled_df
 
-    def _apply_tokenization(self, df: pd.DataFrame, tokenization_map: dict[str, int], drop_key: bool = True):
+    def _apply_tokenization(self, df: pd.DataFrame, tokenization_map: dict[str, int], drop_key: bool = True) -> pd.DataFrame:
         """
-        applies tokeninization found in tokenization map, through:
-
-        dfc[token_colname]   = dfc[col_to_tokenize].map(tokenization_map).astype('Int64')
+        applies tokeninization found in tokenization map by replacing ``'key'`` column.
         """
-        dfc                             = df.copy()
-        dfc[self.epiconfig.id_column]   = dfc['key'].map(tokenization_map).astype('Int64')
+        dfc = df.copy()
+        dfc[self.epiconfig.id_column] = dfc['key'].map(tokenization_map).astype('Int64')
         dfc.reset_index(drop = True, inplace = True)   
 
         if drop_key:
@@ -138,11 +149,17 @@ class EpiDataHarmonizer:
         df = gpd.GeoDataFrame(df)
         return df
 
-    def _get_keynames(self, df: pd.DataFrame):
-        keynames = df[[f'{self.epiconfig.level}_key',f'{self.epiconfig.level}_name']].drop_duplicates()
-        return keynames.reset_index(drop = True).rename(columns = {f'{self.epiconfig.level}_key' : 'key'})
+    def _get_keynames(self, df : pd.DataFrame) -> pd.DataFrame:
+        """
+        Region harmonization got columns ``'nutsx_key'`` and ``'nutsx_name'`` for x in [1,2,3] 
+        in seperate columns so six columns in total. This function selects the respective key
+        and name column.
+        """
+        cols = [f'{self.epiconfig.level}_key',f'{self.epiconfig.level}_name']
+        keynames = df[cols].drop_duplicates().reset_index(drop = True)
+        return keynames.rename(columns = {f'{self.epiconfig.level}_key' : 'key'})
 
-    def _return_temporal_summary(self) -> 'EpiDataTemporalSummary':
+    def _return_temporal_summary(self) -> EpiDataTemporalSummary:
         """returns an instance of EpiDataTemporalSummary, based on EpiConfig"""
         return EpiDataTemporalSummary(self.epiconfig.temporal_frequency,
                                     str(self.epiconfig.min_date), 
@@ -154,7 +171,7 @@ class EpiDataHarmonizer:
                                     self.epiconfig.lag_num,
                                     self.epiconfig.sequence_length)        
 
-    def orchestrate(self, rawdata: 'RawEpiData') -> tuple['HarmonizedEpiData', 'ContextEpiData']:
+    def orchestrate(self, rawdata : RawEpiData) -> tuple[HarmonizedEpiData, ContextEpiData]:
         """
         The function that orchestrates all others
         """
@@ -162,6 +179,7 @@ class EpiDataHarmonizer:
 
         if self.epiconfig.country == 'germany':
             raw_epidata         = self._mutate_berlin_districts(rawdata.disease)
+
         else:
             raw_epidata         = rawdata.disease
 
