@@ -205,7 +205,7 @@ class EpiDataTransformer:
     def _resolve_params(self, col_entry: ColEntry) -> TransformationParams | None:
         """
         Return the TransformationParams that govern this column.
-        For 'self' columns: the column's own params.
+        For ``'self'`` columns: the column's own params.
         For referral columns: the reference column's params.
         """
         match (col_entry.transformation, col_entry.transformation_group):
