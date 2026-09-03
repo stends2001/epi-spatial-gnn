@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING, Iterator
-from tqdm import tqdm 
+from typing import Any, TYPE_CHECKING
 import numpy as np
 
 from ...utils import ModelStatus
@@ -14,7 +13,7 @@ if TYPE_CHECKING:
 
 class GNNModelPresentationMixin:
     """ 
-    ...
+    Mixin class to ``GNNModel`` that deals with the representation of the model.
     """    
     name:               str 
     model_class:        str
@@ -26,8 +25,8 @@ class GNNModelPresentationMixin:
     n_epochs:           int
     dataloadermanager:  GraphDataBuilder
 
-    def _return_verbose_iter(self) -> tuple[list, range | tqdm]:
-        verbose_loops   = list(np.arange(1, self.n_epochs + 1))
+    def _return_verbose_iter(self) -> tuple[list[int], range | range]:
+        verbose_loops : list[int] = list(np.arange(1, self.n_epochs + 1)) # type: ignore
         epoch_iter      = range(self.n_epochs)
         return verbose_loops, epoch_iter   
 
@@ -45,10 +44,10 @@ class GNNModelPresentationMixin:
         widths = [5, 10, 10, 8, 9]
         alignments = ["^", "^", "^", "^", "^"]
 
-        def fmt(value, width, align):
+        def fmt(value: Any, width: Any, align: Any):
             return f"{value:{align}{width}}"
 
-        def make_row(values):
+        def make_row(values : list[str]):
             return "| " + " | ".join(
                 fmt(v, w, a) for v, w, a in zip(values, widths, alignments)
             ) + " |"
