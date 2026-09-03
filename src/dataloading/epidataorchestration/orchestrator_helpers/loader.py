@@ -30,12 +30,13 @@ class EpiDataReader:
     ``EpiDataReader`` is the first one.
     """
     
-    def __init__(self, epiconfig: EpiConfig):
+    def __init__(self, epiconfig : EpiConfig):
         self.epiconfig = epiconfig
 
     def orchestrate(self) -> RawEpiData:
         time_start = time.time()
-        
+
+        # create raw data object
         rawdata = RawEpiData(
             disease             = self._load_disease_data(),
             population_size     = self._load_population_size_data(),
@@ -49,6 +50,7 @@ class EpiDataReader:
 
         time_end = time.time()
         time_elapsed = time_end - time_start
+        
         return rawdata
 
     def _load_disease_data(self) -> pd.DataFrame:
@@ -83,8 +85,7 @@ class EpiDataReader:
             parse_dates = ['timestamp'],
             dtype       = {initial_key:  str, 
                            'cases':      int}
-        ).rename(columns={initial_key: renamed_key})
-        
+        ).rename(columns={initial_key: renamed_key})    
         return df
     
     def _load_population_size_data(self) -> pd.DataFrame:
