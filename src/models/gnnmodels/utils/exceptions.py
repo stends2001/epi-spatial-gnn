@@ -22,5 +22,5 @@ class UnexpectedDataShape(Exception):
         super().__init__(message)
 
 class InconsistentDataShape(Exception):
-    def __init__(self, message):
+    def __init__(self, message: str):
         super().__init__(message)    
