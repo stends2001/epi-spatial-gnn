@@ -228,5 +228,8 @@ class EpiDataTransformer:
         # 3. apply normalisation
         df = self._apply_normalization(df)
 
+        time_end = time.time()
+
+        time_elapsed = time_end - time_start
 
         return TransformedEpiData(data=df)

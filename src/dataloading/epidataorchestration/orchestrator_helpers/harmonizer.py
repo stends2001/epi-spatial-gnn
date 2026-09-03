@@ -239,5 +239,5 @@ class EpiDataHarmonizer:
         )
 
         time_end = time.time()
-
+        time_elapsed = time_end - time_start
         return harmdata, ctxdata

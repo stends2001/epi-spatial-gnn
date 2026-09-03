@@ -228,5 +228,6 @@ class EpiFeatureBuilder:
         feature_data = self._reorder_df(feature_data)
 
         time_end = time.time()
+        time_elapsed = time_end - time_start
 
         return FeatureEpiData(data=feature_data)

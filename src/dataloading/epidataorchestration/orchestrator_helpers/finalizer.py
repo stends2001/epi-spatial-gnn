@@ -145,6 +145,8 @@ class EpiDataFinalizer:
 
         time_end = time.time()
 
+        time_elapsed = time_end - time_start
+
         return FinalizedEpiData(
             data        = dfc_normalized_nanfree,
             data_denorm = dfc_denormalized_nanfree,

@@ -102,5 +102,5 @@ class EpiDataProcessor:
                                           )
         time_end = time.time()
 
-
+        time_elapsed = time_end - time_start
         return processed_data

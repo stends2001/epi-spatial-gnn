@@ -48,7 +48,7 @@ class EpiDataReader:
         )
 
         time_end = time.time()
-
+        time_elapsed = time_end - time_start
         return rawdata
 
     def _load_disease_data(self) -> pd.DataFrame:
