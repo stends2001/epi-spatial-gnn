@@ -29,13 +29,17 @@ class SeasonalAverage(BaseLineModel):
         Forecast for set dataset
         """
         for hh in range(self.databuilder.dataorchestrator.config.horizon_size):
+
             dl              = self.databuilder.dataloader_main
 
             if not isinstance(dl, pd.DataFrame):
                 raise ValueError()
 
-            evaluation_df  = dl[dl[dataset]]
+            # filter on dataset
+            evaluation_df = dl[dl[dataset]]
             evaluation_df = evaluation_df[[self.epiconfig.id_column, self.epiconfig.temporal_column, 'target']]
+
+            # get seasonal averages: average per week idx 
             evaluation_df = self._get_seasonal_indexes(evaluation_df)
             evaluation_df = pd.merge(evaluation_df, self.seasonal_averages, on=[self.epiconfig.id_column, 't_idx'])
 
@@ -54,10 +58,9 @@ class SeasonalAverage(BaseLineModel):
 
         timestamp: pd.Series[pd.Timestamp]  = dfc[self.epiconfig.temporal_column]   
 
+        # add time-index column 't_idx
         if freq == 'w':
             dfc['t_idx'] = timestamp.dt.isocalendar().week.astype(int)
-        elif freq == 'd':
-            dfc['t_idx'] = timestamp.dt.isocalendar().day.astype(int)
         elif freq == 'm':
             dfc['t_idx'] = timestamp.dt.month
         else:
@@ -71,6 +74,6 @@ class SeasonalAverage(BaseLineModel):
         seasonal_index   = self._get_seasonal_indexes(dataloader_train)       
 
         return (seasonal_index.groupby([self.epiconfig.id_column, 't_idx'])['target']
-                       .mean()
-                       .reset_index()
-                       .rename(columns={'target': 'seasonal_mean'}))
+                    .mean()
+                    .reset_index()
+                    .rename(columns={'target': 'seasonal_mean'}))
