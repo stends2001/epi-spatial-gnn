@@ -5,6 +5,7 @@ import torch
 from torch import Tensor as Tensor
 from pathlib import Path
 
+from ...utils import ModelInitError
 from ....utils import PathNotFound
 
 if TYPE_CHECKING:
@@ -12,7 +13,7 @@ if TYPE_CHECKING:
 
 class GNNModelCheckpointMixin:
     """ 
-    ...
+    Mixin class to ``GNNModel`` that deals with saving of models.
     """    
     model: torch.nn.Module 
     clean_name: str
@@ -21,12 +22,18 @@ class GNNModelCheckpointMixin:
     verbose: int
     epiconfig: EpiConfig
 
-    def save_model(self, dir: Path):
+    def save_model(self, dir: Path) -> None:
         """
-        ...
+        Save model
+
+        Parameters
+        ----------
+        dir : Path
+            Directory in which to save the model. NOTE that this directory
+            needs to exist.
         """
         if not hasattr(self, 'model'):
-            raise ValueError('No model found!')
+            raise ModelInitError('No attribute "model" found')
         
         # if parent of dir doesn't exist, error
         if not dir.parent.exists():
