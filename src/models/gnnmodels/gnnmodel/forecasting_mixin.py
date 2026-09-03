@@ -12,16 +12,14 @@ from ...utils import ModelStatus
 from ....dataloading.databuilders import GraphDataBuilder
 
 if TYPE_CHECKING:
+    from ....dataloading import ColumnRegistry
     from ...utils import PredictionManager
     from ....dataloading import EpiConfig
     from ..utils import Strategy, LossManager
-    from ....dataloading.epidataorchestration.containers import ContextEpiData
-
-    
+    from ....dataloading.epidataorchestration.containers import ContextEpiData    
 
 class GNNModelForecastMixin:
-    """ 
-    """  
+ 
     model:              torch.nn.Module
     dataloadermanager:  GraphDataBuilder
     strategy:           Strategy
@@ -31,6 +29,7 @@ class GNNModelForecastMixin:
     loss:               LossManager
     predictions:        PredictionManager
     context_data:       ContextEpiData
+    column_registration: ColumnRegistry
     _residual_quantiles: dict[tuple[int, int], dict[int, float]]  
 
     def forecast(self, dataset: DataSetSplit = 'test'):
@@ -58,13 +57,9 @@ class GNNModelForecastMixin:
         iterator            = dataloader
         total_loss          = 0
         
-        # setup expected predictions-shape [num_nodes, horizon_size, num_quantiles]
+        # setup expected predictions-shape [num_nodes, horizon_size]
         num_nodes           = self.context_data.num_nodes
-        _out_quantiles      = 1 if (hasattr(self, '_residual_quantiles') or self.epiconfig._num_quantiles == 0) else self.epiconfig._num_quantiles
-        expected_shape_yhat = [num_nodes,
-                            self.epiconfig.horizon_size,
-                            max(1, _out_quantiles)
-                            ]
+        expected_shape_yhat = [num_nodes, self.epiconfig.horizon_size]
 
         # turn off gradient tracking
         with torch.no_grad():
@@ -72,17 +67,21 @@ class GNNModelForecastMixin:
             # for each snapshot, forecast
             for idx, snapshot in enumerate(iterator):
                 snapshot = snapshot.to(self.device)
+
                 y_hat, loss_val = self.strategy.forecast_step(
                     model   = self.model, 
                     snapshot= snapshot, 
                     loss_fn = self.loss
                 )
+
                 total_loss += loss_val
 
                 # validate predictions-shape only the first snapshot
                 if idx == 0:
                     if list(y_hat.shape) != expected_shape_yhat:
-                        raise UnexpectedDataShape(f'{list(y_hat.shape)}', f'{expected_shape_yhat}', "stacked yhat forecasting snapshot 0")
+                        raise UnexpectedDataShape(
+                            f'{list(y_hat.shape)}', f'{expected_shape_yhat}', "stacked yhat forecasting snapshot 0"
+                            )
 
                 raw_predictions.append(y_hat.detach().cpu())
                 raw_targets.append(snapshot.y.detach().cpu())
@@ -91,7 +90,7 @@ class GNNModelForecastMixin:
         setattr(self, f'{dataset}_loss', avg_loss)
 
         # =========== SHAPE CHECK 1 ============= #
-        # at this point, raw_predictions is a List of len [timestamps].
+        # At this point, raw_predictions is a List of len [timestamps].
         # at each idx, there is a Tensor with shape [num_nodes, horizon_size, quantiles].
         # Since quantiles don't play a role in the target, those do not have that final dim
         # We're now removing the list-ness and stack that to a new dimension. The tensors therefore
@@ -100,40 +99,25 @@ class GNNModelForecastMixin:
         predictions_tensor  = torch.stack(raw_predictions)
         targets_tensor      = torch.stack(raw_targets)
 
-        expected_shape_predictions = [len(dataloader), num_nodes, self.epiconfig.horizon_size, max(1, _out_quantiles)]
+        expected_shape_predictions  = [len(dataloader), num_nodes, self.epiconfig.horizon_size]
         expected_shape_targets      = [len(dataloader), num_nodes, self.epiconfig.horizon_size]        
 
         received_shape_predictions  = list(predictions_tensor.shape)
         received_shape_targets      = list(targets_tensor.shape)
 
         if expected_shape_predictions != received_shape_predictions:
-            raise UnexpectedDataShape(f'{received_shape_predictions}', f'{expected_shape_predictions}', "stacked raw predictions")
+            raise UnexpectedDataShape(
+                f'{received_shape_predictions}', f'{expected_shape_predictions}', "stacked raw predictions"
+                )
 
         if expected_shape_targets != received_shape_targets:
-            raise UnexpectedDataShape(f'{received_shape_targets}', f'{expected_shape_targets}', "stacked raw targets")
+            raise UnexpectedDataShape(
+                f'{received_shape_targets}', f'{expected_shape_targets}', "stacked raw targets"
+                )
 
-        num_timesteps, num_nodes, horizon_size, num_quantiles = predictions_tensor.shape
+        num_timesteps, num_nodes, horizon_size = predictions_tensor.shape
 
-        # =========== CALIBRATION ============= #
-        # If calibrate() has been called on a point-loss model, expand the
-        # single pred dim into Q quantile columns using val residuals.
-        if len(self._residual_quantiles) >0 and self.loss.loss_name not in ['pinball', 'pinchpinball']:
-            predictions_tensor = self._apply_calibration(predictions_tensor, dataset)
-            num_quantiles      = predictions_tensor.shape[-1]  # update: 1 → Q
-
-        # Get the quantile column names from the column registry
-        if self.epiconfig._num_quantiles == 0:
-            pred_col_names = ['pred']                  
-        else:
-            pred_col_names = [c for c in self.predictions.column_registration.pred_columns if c != 'pred'] 
-
-        # Get the quantile column names from the column registry
-        # These are the names PredictionManager expects, e.g. ['q_0.1', 'q_0.5', 'q_0.9']
-        # For num_quantiles == 0 (point forecast), this degenerates to ['pred']
-        if self.epiconfig._num_quantiles == 0:
-            pred_col_names = ['pred']                  
-        else:
-            pred_col_names = [c for c in self.predictions.column_registration.pred_columns if c != 'pred']    
+        pred_col = self.column_registration.target_columns[0]
         
         results = self._format_forecast_results(
             predictions     = predictions_tensor,
@@ -142,21 +126,18 @@ class GNNModelForecastMixin:
             num_timesteps   = num_timesteps,
             num_nodes       = num_nodes,
             horizon_size    = horizon_size,
-            pred_col_names  = pred_col_names,
+            pred_col_names  = [pred_col],
         )
 
         for hh in range(horizon_size):
             # Select the columns for this horizon: timestamp, id, all pred_cols, target
             horizon_cols = (
                 [self.epiconfig.temporal_column, self.epiconfig.id_column]
-                + [f'{col}_{hh}' for col in pred_col_names]
-                + [f'target_{hh}']
+                + [f'{pred_col}_{hh}'] + [f'target_{hh}']
             )
             horizon_data = results[horizon_cols].rename(
-                columns={
-                    **{f'{col}_{hh}': col for col in pred_col_names},
-                    f'target_{hh}': 'target',
-                }
+                columns={f'{pred_col}_{hh}' : pred_col,
+                          f'target_{hh}'    : 'target'}
             )
 
             self.predictions.add_horizon_predictions(dataset, horizon_data, hh)
@@ -178,15 +159,14 @@ class GNNModelForecastMixin:
         Formats predictions into a flat DataFrame aligned with correct timestamps.
         Handles both point forecasts (num_quantiles=1) and quantile forecasts.
 
-        predictions shape: [num_timesteps, num_nodes, horizon_size, num_quantiles]
+        predictions shape: [num_timesteps, num_nodes, horizon_size]
         targets shape:     [num_timesteps, num_nodes, horizon_size]
         """
-        num_quantiles = len(pred_col_names)
 
-        # Reshape: [num_sequences * num_nodes, horizon_size, num_quantiles]
+        # Reshape: [num_sequences * num_nodes, horizon_size]
         pred_reshaped = (
             predictions
-            .view(num_timesteps * num_nodes, horizon_size, num_quantiles)
+            .view(num_timesteps * num_nodes, horizon_size)
             .numpy()
         )
         # Reshape: [num_sequences * num_nodes, horizon_size]
@@ -225,41 +205,6 @@ class GNNModelForecastMixin:
             results[f'target_{hh}'] = target_reshaped[:, hh]
 
         return results
-
-    def _apply_calibration(
-        self,
-        predictions_tensor: torch.Tensor,
-        dataset: Literal['train', 'val', 'test'],
-    ) -> torch.Tensor:
-        """
-        If calibration has been run, replace the single point-forecast quantile dim
-        with Q calibrated quantile offsets applied to the median prediction.
-        predictions_tensor: [num_timesteps, num_nodes, horizon_size, 1]
-        returns:            [num_timesteps, num_nodes, horizon_size, Q]
-        """
-        import numpy as np
-
-        time_splits = self.dataloadermanager.time_splits
-        freq        = self.dataloadermanager.dataorchestrator.config.temporal_frequency
-
-        timestamps  = pd.to_datetime(
-            time_splits[time_splits[dataset]][self.epiconfig.temporal_column].values
-        )
-
-        if freq == 'w':
-            t_idx = timestamps.isocalendar().week.astype(int).values
-        elif freq == 'm':
-            t_idx = timestamps.month.values
-        elif freq == 'd':
-            t_idx = timestamps.isocalendar().day.astype(int).values
-        else:
-            raise ValueError(f'Unknown temporal frequency: {freq}')
-
-        num_timesteps, num_nodes, horizon_size, _ = predictions_tensor.shape
-        point_preds = predictions_tensor.squeeze(-1).numpy()  # [T, N, H]
-
-        return torch.tensor(point_preds, dtype=torch.float32)
-
 
     # ========== STUBS ========== #
     def _check_status(self, required_states: list[ModelStatus] | ModelStatus) -> None: ...
