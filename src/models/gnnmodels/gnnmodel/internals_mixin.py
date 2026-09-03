@@ -4,7 +4,8 @@ from ..utils import Strategy
 from ....utils import PathManager
 
 class GNNModelInternalsMixin:
-    """ 
+    """
+    Mixin class to ``GNNModel`` that deals with some internal attributes-setting.     
     """
     def _set_strategy(self, strategy: Strategy):
         """sets strategy"""
