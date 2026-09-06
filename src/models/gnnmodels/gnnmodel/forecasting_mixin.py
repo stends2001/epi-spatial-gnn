@@ -119,7 +119,7 @@ class GNNModelForecastMixin:
 
         num_timesteps, num_nodes, horizon_size = predictions_tensor.shape
 
-        pred_col = self.column_registration.target_columns[0]
+        pred_col = self.column_registration.pred_columns[0]
         
         results = self._format_forecast_results(
             predictions     = predictions_tensor,
@@ -128,7 +128,7 @@ class GNNModelForecastMixin:
             num_timesteps   = num_timesteps,
             num_nodes       = num_nodes,
             horizon_size    = horizon_size,
-            pred_col_names  = [pred_col],
+            pred_col_name   = pred_col,
         )
 
         for hh in range(horizon_size):
@@ -155,7 +155,7 @@ class GNNModelForecastMixin:
         num_timesteps: int,
         num_nodes: int,
         horizon_size: int,
-        pred_col_names: list[str],
+        pred_col_name: str,
         ) -> pd.DataFrame:
         """
         Formats predictions into a flat DataFrame aligned with correct timestamps.
@@ -202,7 +202,7 @@ class GNNModelForecastMixin:
 
         for hh in range(horizon_size):
             # for qq, col_name in enumerate(pred_col_names):
-            results[f'{pred_col_names[0]}_{hh}'] = pred_reshaped[:, hh]
+            results[f'{pred_col_name}_{hh}'] = pred_reshaped[:, hh]
             results[f'target_{hh}'] = target_reshaped[:, hh]
 
         return results
