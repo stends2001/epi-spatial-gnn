@@ -6,7 +6,7 @@ from .exceptions import MissingPredictionsError
 @dataclass
 class PredictionCollection:
     """
-    Stores predictions across horizons for a single datast (train/val/test)
+    Stores predictions across horizons for a single datast (train/val/test).
     
     Predictions are stored in a dictionary with three levels:
 
