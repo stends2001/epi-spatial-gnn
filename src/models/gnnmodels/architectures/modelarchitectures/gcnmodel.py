@@ -9,11 +9,11 @@ class GCNModel(GNNModel):
     """
     _expected_databuilder = 'GraphDataBuilder'
     def __init__(self,
-                 dataloadermanager: GraphDataBuilder,
+                 databuilder: GraphDataBuilder,
                  name:              str           = 'gcnmodel'):
 
         super().__init__(
-            dataloadermanager   = dataloadermanager,
+            databuilder   = databuilder,
             name                = name,
             strategy            = Strategy()
         )

@@ -10,12 +10,12 @@ class GATModel(GNNModel):
     """
     _expected_databuilder = 'GraphDataBuilder'
     def __init__(self,
-                 dataloadermanager: GraphDataBuilder,
+                 databuilder: GraphDataBuilder,
                  name:              str           = 'gatmodel',
                  num_quantiles:     int = 1):
 
         super().__init__(
-            dataloadermanager   = dataloadermanager,
+            databuilder   = databuilder,
             name                = name,
             strategy            = Strategy()
         )
