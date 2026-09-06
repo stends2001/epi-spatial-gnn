@@ -10,7 +10,7 @@ from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 
 from ...utils.types import AdminLevel, Country
-from ..graphobjects import GraphStructure, GraphObject
+from ..graphobjects import GraphStructure
 
 class GraphViewer:
     """ 
