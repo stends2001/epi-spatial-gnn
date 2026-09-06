@@ -200,10 +200,9 @@ class GNNModelForecastMixin:
         assert pd.Timestamp(timestamps[-num_nodes]) == pd.Timestamp(expected[1]), \
             f"Last timestamp mismatch: got {timestamps[-num_nodes]}, expected {expected[1]}"
 
-        # One column per horizon per quantile: e.g. q_0.1_0, q_0.5_0, q_0.9_0, ...
         for hh in range(horizon_size):
-            for qq, col_name in enumerate(pred_col_names):
-                results[f'{col_name}_{hh}'] = pred_reshaped[:, hh, qq]
+            # for qq, col_name in enumerate(pred_col_names):
+            results[f'{pred_col_names[0]}_{hh}'] = pred_reshaped[:, hh]
             results[f'target_{hh}'] = target_reshaped[:, hh]
 
         return results
