@@ -141,7 +141,7 @@ class GATModule(nn.Module):
         h_out = h
 
         # Project to forecasts
-        output = self.output_proj(h_out)                                                # [num_nodes, horizon_size * num_quantiles]
-        output = output.view(self.num_nodes, self.horizon_size, self.num_quantiles)     # [num_nodes, horizon_size,  num_quantiles] 
+        output = self.output_proj(h_out)                                                # [num_nodes, horizon_size]
+        output = output.view(self.num_nodes, self.horizon_size)                         # [num_nodes, horizon_size] 
 
         return output
