@@ -85,8 +85,8 @@ class GCNModule(nn.Module):
 
         # Deep spatial stack with residual connections.
         # Each layer: GCNConv → LayerNorm → ReLU → Dropout + residual
-        convs       = []
-        norms       = []
+        convs : list[GCNConv] = []
+        norms : list[nn.LayerNorm] = []
         for layer in range(num_layers):
             convs.append(GCNConv(in_channels    = hidden_size, 
                                  out_channels   = hidden_size,
