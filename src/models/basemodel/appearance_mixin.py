@@ -21,7 +21,6 @@ class ModelAppearanceMixin:
     column_registration : ColumnRegistry
     status_dict : dict[ModelStatus, bool]
     model_class : str 
-    verbose : int    
 
     def _get_model_color(self) -> str:
         """returns model-color in string format based on the lookup in model_colors"""
@@ -45,10 +44,7 @@ class ModelAppearanceMixin:
     def _print_status_update(self, status: ModelStatus):
         """Print status update depending on `verbose`"""
 
-        if self.verbose <= 0:
-            return
-
-        if status == "model_initialized" and self.verbose > 1:
+        if status == "model_initialized":
             self._print_header()
         else:
             print(f"{status} {checkmark}")
