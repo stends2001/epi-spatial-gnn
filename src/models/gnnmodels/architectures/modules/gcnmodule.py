@@ -32,7 +32,6 @@ class GCNModule(nn.Module):
 
     Forward
     -------
-
     The forward pass is divided into the following parts:
     - input projection
         - temporal-flattening
