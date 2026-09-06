@@ -90,8 +90,9 @@ class GATModule(nn.Module):
         # Deep spatial stack with residual connections.
         # Each layer: GATv2Conv → LayerNorm → ReLU → Dropout + residual
 
-        convs       = []
-        norms       = []
+        convs : list[GATv2Conv] = []
+        norms : list[nn.LayerNorm] = []
+        
         for layer in range(num_layers):
             convs.append(GATv2Conv(
                 in_channels = hidden_size,
