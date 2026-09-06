@@ -29,7 +29,7 @@ class GNNModelTrainMixin:
     epiconfig:          EpiConfig
     config_info:        dict[str, Any]    
     model:              torch.nn.Module
-    dataloadermanager:  GraphDataBuilder
+    databuilder:  GraphDataBuilder
     strategy:           Strategy
     device:             torch.device
     optimizer:          Optimizer
@@ -48,8 +48,8 @@ class GNNModelTrainMixin:
         """
         self._check_status(['model_hparams_set', 'global_hparams_set'])
   
-        train_loader = self.dataloadermanager.dataloader_train 
-        val_loader   = self.dataloadermanager.dataloader_val 
+        train_loader = self.databuilder.dataloader_train 
+        val_loader   = self.databuilder.dataloader_val 
 
         verbose_loops, epoch_iter = self._return_verbose_iter()
 

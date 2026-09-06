@@ -23,7 +23,7 @@ class GNNModelPresentationMixin:
     predictions:        PredictionManager
     verbose:            int
     n_epochs:           int
-    dataloadermanager:  GraphDataBuilder
+    databuilder:  GraphDataBuilder
 
     def _return_verbose_iter(self) -> tuple[list[int], range | range]:
         verbose_loops : list[int] = list(np.arange(1, self.n_epochs + 1)) # type: ignore

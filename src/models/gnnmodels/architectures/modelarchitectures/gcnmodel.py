@@ -28,9 +28,9 @@ class GCNModel(GNNModel):
         """
         """
         _num_features   = len(self.column_registration.get_entries_names_by_type('feature'))
-        _num_nodes      = len(self.dataloadermanager.dataorchestrator.data_context.local_shapedata)
-        _horizon_size   = self.dataloadermanager.dataorchestrator.config.horizon_size
-        _seq_length     = self.dataloadermanager.dataorchestrator.config.sequence_length
+        _num_nodes      = len(self.databuilder.dataorchestrator.data_context.local_shapedata)
+        _horizon_size   = self.databuilder.dataorchestrator.config.horizon_size
+        _seq_length     = self.databuilder.dataorchestrator.config.sequence_length
 
         self.model = GCNModule(
             hidden_size     = hidden_size,

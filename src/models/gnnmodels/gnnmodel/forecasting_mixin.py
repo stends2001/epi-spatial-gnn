@@ -23,7 +23,7 @@ class GNNModelForecastMixin:
     Mixin class to ``GNNModel`` that deals with forecasting of models.    
     """
     model:              torch.nn.Module
-    dataloadermanager:  GraphDataBuilder
+    databuilder:  GraphDataBuilder
     strategy:           Strategy
     verbose:            int
     epiconfig:          EpiConfig
@@ -47,11 +47,11 @@ class GNNModelForecastMixin:
 
         match dataset:
             case 'train':
-                dataloader = self.dataloadermanager.dataloader_train
+                dataloader = self.databuilder.dataloader_train
             case 'val':
-                dataloader = self.dataloadermanager.dataloader_val 
+                dataloader = self.databuilder.dataloader_val 
             case 'test':
-                dataloader = self.dataloadermanager.dataloader_test
+                dataloader = self.databuilder.dataloader_test
             case _:
                 assert_never(dataset)
         
@@ -178,13 +178,13 @@ class GNNModelForecastMixin:
         sequence_idx = np.repeat(np.arange(num_timesteps), num_nodes)
         node_idx     = np.tile(np.arange(num_nodes), num_timesteps)
 
-        global_indices = self.dataloadermanager.time_splits[
-            self.dataloadermanager.time_splits[dataset]
+        global_indices = self.databuilder.time_splits[
+            self.databuilder.time_splits[dataset]
         ].index
 
-        offset = (self.dataloadermanager.dataorchestrator.config.sequence_length - 1) if dataset == 'train' else 0
+        offset = (self.databuilder.dataorchestrator.config.sequence_length - 1) if dataset == 'train' else 0
 
-        timestamps = self.dataloadermanager.time_splits.loc[
+        timestamps = self.databuilder.time_splits.loc[
             global_indices[sequence_idx + offset], self.epiconfig.temporal_column
         ].values
         
