@@ -1,9 +1,7 @@
-from typing import List
-
 
 class UnexpectedAttributeTypeError(Exception):
     
-    def __init__(self, attribute_name: str, cls_name: str, found_type: str, allowed_types: List[str]):
+    def __init__(self, attribute_name: str, cls_name: str, found_type: str, allowed_types: list[str]):
         message = f"Attribute {attribute_name} has an unexpected type in {cls_name}. Got {found_type} but only {allowed_types} are allowed"
         super().__init__(message)
 
@@ -21,13 +19,13 @@ class MissingColumnError(Exception):
 
 class InvalidTokenizationError(Exception):
     
-    def __init__(self, attribute_name: str, cls_name: str, missing_tokens: List[int], leftover_tokens: List[int]):
+    def __init__(self, attribute_name: str, cls_name: str, missing_tokens: list[int], leftover_tokens: list[int]):
         message = f"Attribute {attribute_name} in {cls_name} is not properly tokenized. Missing tokens: {missing_tokens}. Leftover tokens: {leftover_tokens}"
         super().__init__(message)        
 
 class NaNsFoundError(Exception):
     
-    def __init__(self, attribute_name: str, cls_name: str, columns: List[str]):
+    def __init__(self, attribute_name: str, cls_name: str, columns: list[str]):
         message = f"Attribute {attribute_name} in {cls_name} has NaNs in columns {columns}."
         super().__init__(message)        
 
