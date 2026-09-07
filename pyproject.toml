@@ -1,9 +1,18 @@
 [project]
-name = " "
-version = " "
-description = " "
+name = "epi-spatial-gnn"
+version = "1.0.0"
+description = "Repository adjacent to [paper title]."
 dependencies = [
+    "PyYAML==6.0.2",
+    "scipy==1.16.1",
+    "scikit-learn==1.7.1",
+    "numpy==2.3.2",
     "matplotlib==3.10.3",
+    "pandas==2.2.3",
+    "geopandas==1.1.1",
+    "seaborn==0.13.2",
+    "torch==2.4.0",
+    "torch_geometric==2.6.1",
 ]
 
 [build-system]
