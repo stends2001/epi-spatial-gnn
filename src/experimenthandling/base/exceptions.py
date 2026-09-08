@@ -9,3 +9,7 @@ class DataLoaderManagerError(Exception):
 class ExperimentDirectoryNotFoundError(Exception):
     def __init__(self, message: str):
         super().__init__(message)      
+
+class ExperimentDirectoryInvalidError(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)   
