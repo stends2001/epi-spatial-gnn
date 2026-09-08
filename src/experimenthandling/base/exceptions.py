@@ -2,7 +2,7 @@ class IncompatibleExperimentConfigs(Exception):
     def __init__(self, msg: str):
         super().__init__(msg)
 
-class DataLoaderManagerError(Exception):
+class DataBuilderError(Exception):
     def __init__(self, message: str):
         super().__init__(message)       
 
