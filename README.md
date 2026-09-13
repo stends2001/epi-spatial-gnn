@@ -9,7 +9,8 @@ subnational epidemic forecasting. Companion codebase for [paper title].
 - make requirements:
     - pytorch
     - torch_geometric
-
+- epiconfig : save_config -> save
+- add documentation to src > experimenthandling > runner
 - clean up ``GNNmodel._format_forecast_results()``
 - double + triple check that the topK filtering using the random graphs is correct.
 
