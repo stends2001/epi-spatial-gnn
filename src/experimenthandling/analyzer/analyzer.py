@@ -107,14 +107,14 @@ class ExperimentAnalyzer(ExperimentLoader,
         baseline_dlm = self.dataloadermanagers[varvalue].baseline
 
         persistence  = Persistence(baseline_dlm,  f'persistence-{self.variable_alias}{varvalue}')
-        climatology  = SeasonalAverage(baseline_dlm, f'climateology-{self.variable_alias}{varvalue}')
+        seasonalaverage  = SeasonalAverage(baseline_dlm, f'seasonal_average-{self.variable_alias}{varvalue}')
 
         persistence.forecast('test')
-        climatology.forecast('test')
+        seasonalaverage.forecast('test')
 
-        # all_models: List[BaseModel] = [persistence, climatology] + models
+        # all_models: List[BaseModel] = [persistence, seasonalaverage] + models
         all_models : list[BaseModel] = sorted(
-            [persistence, climatology] + models,
+            [persistence, seasonalaverage] + models,
             key=lambda m: m.name
         )      
         return all_models    
