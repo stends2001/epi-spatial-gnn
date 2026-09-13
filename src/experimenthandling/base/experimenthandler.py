@@ -54,7 +54,8 @@ class ExperimentHandler:
 
     Downstream
     ----------
-    ...
+    ``ExperimentHandler`` defines shared behavior for its sub classes. Mainly, ``ExperimentAnalyzer``
+    and ``ExperimentRunner`` are used. 
     """    
     databuilders: dict[int | str | float, ExperimentDataBuilders] | None = None
     epicfg : EpiConfig           

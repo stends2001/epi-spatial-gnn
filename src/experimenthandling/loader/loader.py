@@ -12,8 +12,25 @@ from .io_mixin import ExperimentLoaderIOMixin
 
 class ExperimentLoader(ExperimentLoaderIOMixin, 
                        ExperimentHandler):
+    """ 
+    Loads experiments. This is a parent class to ``ExperimentAnalyzer``.
+
+    Parameters
+    ----------
+    experiment_name: str 
+        Name of the experiment. This string should be identical to the directory in 
+        which the models and configs are saved.     
+    
+    Methods
+    -------
+    ``load_models()``
+        Returns a dictionary that stores all models from the experiment directory.
+
+    Downstream
+    ----------
+    ``ExperimentHandler`` defines shared behavior for its sub classes. Mainly, ``ExperimentAnalyzer``
+    and ``ExperimentRunner`` are used.
     """    
-    """
     def __init__(self, 
                  experiment_name : str):
         
@@ -58,13 +75,6 @@ class ExperimentLoader(ExperimentLoaderIOMixin,
         """ 
         returns a dictionary with values of the variable in key, and the list
         of models in value.
-
-        See Also
-        --------
-        ### Helper methods:
-        - `_parse_filename()`
-        - `_get_dlm()`
-        - `_load_model()`
         """
         varalias = self.expcfg.variable_alias       
         varvalues= self.expcfg.variable_values

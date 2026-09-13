@@ -18,8 +18,29 @@ class ExperimentAnalyzer(ExperimentLoader,
                          MetricsDFStateMixin,
                          ResultsMixin,
                          MoransAnalysisMixin):
+    """ 
+    Analyzes experiments. This is a sub class to ``ExperimentLoader``.
+
+    Parameters
+    ----------
+    experiment_name: str 
+        Name of the experiment. This string should be identical to the directory in 
+        which the models and configs are saved.     
+    
+    Methods
+    -------
+    ``load_models()``
+
+    ``compile_metric()``
+        Returns a dictionary that stores all models from the experiment directory.
+
+    ``save_metrics()``
+    
+    Downstream
+    ----------
+    ``ExperimentHandler`` defines shared behavior for its sub classes. Mainly, ``ExperimentAnalyzer``
+    and ``ExperimentRunner`` are used.
     """    
-    """
     evaluators: dict[int | str | float, Evaluator]
 
     metrics_df_filename = 'metrics.csv'

@@ -14,7 +14,27 @@ class ExperimentRunner(ExperimentRunnerConfigMixin,
                        ExperimentRunnerModelMixin,
                        ExperimentHandler):
     """ 
-    """
+    Runs experiments.
+
+    Parameters
+    ----------
+    epiconfig : EpiConfig 
+        The configuration class for a single 'setting'. I.e. when an experiment covers
+        predictions made over a range of horizons, each horizon has an associated
+        ``EpiConfig``.
+    expconfig : ExperimentConfig
+        The configuration class for an experiment.    
+    
+    Methods
+    -------
+    ``load_models()``
+        Returns a dictionary that stores all models from the experiment directory.
+
+    Downstream
+    ----------
+    ``ExperimentHandler`` defines shared behavior for its sub classes. Mainly, ``ExperimentAnalyzer``
+    and ``ExperimentRunner`` are used.
+    """    
     def __init__(self,
                  epiconfig : EpiConfig,
                  experimentconfig : ExperimentConfig,):
@@ -29,9 +49,11 @@ class ExperimentRunner(ExperimentRunnerConfigMixin,
 
         self._set_databuilders()
 
-    # ======= METHODS ======= #
-    def run(self, global_hparams : dict[Any, Any], show_progress: bool = False):
+    def run(self, 
+            global_hparams : dict[Any, Any], 
+            show_progress: bool = False):
         """
+        Run the experiment.
         """
         self._save_cfgs()
         
@@ -65,7 +87,6 @@ class ExperimentRunner(ExperimentRunnerConfigMixin,
                         case _:
                             assert_never(childclass._expected_databuilder)
      
-
     def _set_databuilders(self) -> None:
         """"""
         dataloader_managers_dict: dict[int | str | float, ExperimentDataBuilders] = {}
