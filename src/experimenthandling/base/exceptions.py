@@ -13,3 +13,7 @@ class ExperimentDirectoryNotFoundError(Exception):
 class ExperimentDirectoryInvalidError(Exception):
     def __init__(self, message: str):
         super().__init__(message)   
+
+class InvalidModelNameError(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)
