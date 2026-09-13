@@ -12,7 +12,7 @@ from ...models.gnnmodels.gnnmodel import GNNModel
 
 class ExperimentHandler:
     """ 
-    Parent class of xperiment-handling classes, namely:
+    Parent class of experiment-handling classes, namely:
     - ``ExperimentRunner``
     - ``ExperimentLoader``
     - ``ExperimentAnalyzer``(second degree; this is a sub-class to ExperimentLoader)
