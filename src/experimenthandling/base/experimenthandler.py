@@ -34,7 +34,7 @@ class ExperimentHandler:
     
     Attributes
     ----------
-    ``dataloadermanagers`` : dict[int | str | float, ExperimentDataBuilders] | None
+    ``databuilders`` : dict[int | str | float, ExperimentDataBuilders] | None
         Dictionary of ExperimentDataBuilders per value of the experiment's variable.
         ``_get_databuilder`` returns a specific dataloadermanager from this attribute.
     ``epicfg``: EpiConfig
