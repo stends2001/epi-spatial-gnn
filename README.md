@@ -4,15 +4,14 @@ subnational epidemic forecasting. Companion codebase for [paper title].
 
 ## To do list
 - refactor code
-- make standalone modules
+- organize README a bit better.
+- Add Documentation to experimenthandling
 - Add Documentation to GNNmodels.
-- make requirements:
-    - pytorch
-    - torch_geometric
 - epiconfig : save_config -> save
-- add documentation to src > experimenthandling > runner
+- Write code on data preprocessing
 - clean up ``GNNmodel._format_forecast_results()``
 - double + triple check that the topK filtering using the random graphs is correct.
+- figure out what to do with results_mixin.py
 
 ## Project Structure
 
