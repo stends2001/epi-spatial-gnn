@@ -208,7 +208,7 @@ class EpiConfig:
         with open(path, 'w') as f:
             yaml.dump(config_dict, f, default_flow_style=False, sort_keys=False)    
 
-    def copy(self, **overrides) -> 'EpiConfig':
+    def copy(self, **overrides) -> EpiConfig:
         """
         Returns a new EpiConfig instance with the same settings.
         Optionally override specific fields by passing them as keyword arguments.
@@ -221,7 +221,7 @@ class EpiConfig:
         return EpiConfig(**fields)
 
     @classmethod
-    def load_config(cls, path: Path) -> 'EpiConfig':
+    def load_config(cls, path: Path) -> EpiConfig:
         """ 
         Loads a .yaml of name `config_name` into an EpiConfig
         the directory returned by `get_config_path()`.
