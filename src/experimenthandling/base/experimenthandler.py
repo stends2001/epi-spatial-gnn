@@ -19,7 +19,7 @@ class ExperimentHandler:
     
     This parent class only deals with the paths based on the experiment_name.
     This class should not be called in itself, but rather, its subclasses should.
-    Also defines a `_get_dlm()` method which is shared among the subclasses.
+    Also defines a `_get_databuilder()` method which is shared among the subclasses.
 
     Parameters
     ----------
