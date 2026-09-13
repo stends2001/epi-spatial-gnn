@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, Any
 from pathlib import Path
 import yaml
 import dataclasses
@@ -208,7 +208,7 @@ class EpiConfig:
         with open(path, 'w') as f:
             yaml.dump(config_dict, f, default_flow_style=False, sort_keys=False)    
 
-    def copy(self, **overrides) -> EpiConfig:
+    def copy(self, overrides : dict[Any, Any]) -> EpiConfig:
         """
         Returns a new EpiConfig instance with the same settings.
         Optionally override specific fields by passing them as keyword arguments.
@@ -217,7 +217,7 @@ class EpiConfig:
             new_cfg = cfg.copy(max_date='2021-01-01', horizon_size=2)
         """
         fields = {f.name: getattr(self, f.name) for f in dataclasses.fields(self)}
-        fields.update(overrides)
+        fields.update(**overrides)
         return EpiConfig(**fields)
 
     @classmethod
