@@ -26,6 +26,7 @@ src/
 │   │   └── deepdataloader
 │   ├── epiconfig
 │   └── epidataorchestration
+├── datapreprocessing
 ├── evaluation
 ├── experimenthandling
 ├── graphconstruction
@@ -110,6 +111,8 @@ flowchart TD
 ```
 
 ### Data Preparation
+
+Data is preprocessed following the scripts in ``src/datapreprocessing``.
 
 ``EpiConfig`` is the main configuration class that guides the experiment being run. Features are selected, the setting (i.e. Germany at NUTS 1 / NUTS 2 / NUTS 3) is selected, and the number of timesteps ahead as well.
 
