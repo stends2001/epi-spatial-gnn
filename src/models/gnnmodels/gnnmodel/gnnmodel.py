@@ -157,8 +157,8 @@ class GNNModel(
         # create an instance of model
         child_cls = cls._childclasses[model_key]
         instance  = child_cls(
-            name              = save_dict['name'],
-            databuilder = GraphDataBuilder,
+            name = save_dict['name'],
+            databuilder = databuilder,
         ) # type: ignore
         
         databuilder.dataorchestrator.config.assert_equals(save_dict['epiconfig_summary'], level = 1)
