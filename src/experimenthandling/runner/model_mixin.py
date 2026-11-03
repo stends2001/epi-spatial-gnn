@@ -1,5 +1,5 @@
 from pathlib import Path 
-from typing import Any
+from typing import Any, TYPE_CHECKING
 import os
 
 from ..base import ExperimentConfig
@@ -63,8 +63,9 @@ class ExperimentRunnerModelMixin:
         model.save_model(dir=self.path_exp)
 
     # stub
-    def _get_databuilder(self, 
-                 modelclass : str, 
-                 varvalue : int | float | str, 
-                 graph : str | None = None) -> GraphDataBuilder | BaseLineDataBuilder:
-        ...
+    if TYPE_CHECKING:
+        def _get_databuilder(self, 
+                    modelclass : str, 
+                    varvalue : int | float | str, 
+                    graph : str | None = None) -> GraphDataBuilder | BaseLineDataBuilder:
+            ...
