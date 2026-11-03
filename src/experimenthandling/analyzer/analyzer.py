@@ -106,8 +106,8 @@ class ExperimentAnalyzer(ExperimentLoader,
             raise DataBuilderError('no databuilders found')
         
         return {
-            varvalue: self.dataloadermanagers[varvalue].baseline.dataorchestrator 
-                  for varvalue in self.dataloadermanagers}
+            varvalue: self.databuilders[varvalue].baseline.dataorchestrator 
+                  for varvalue in self.databuilders}
 
     def _merge_and_process_metrics(self, all_metrics : list[pd.DataFrame]) -> pd.DataFrame:
         """merge all varvalue - individual metric dfs and get the right order of columns"""
@@ -124,8 +124,8 @@ class ExperimentAnalyzer(ExperimentLoader,
         """returns a list of models: not just the experimented one (seediwse) but also baseline ones."""
 
         # `_get_dataorchs()` already asserts that this is the case, which is internally called upon init.        
-        assert self.dataloadermanagers is not None                          
-        baseline_dlm = self.dataloadermanagers[varvalue].baseline
+        assert self.databuilders is not None                          
+        baseline_dlm = self.databuilders[varvalue].baseline
 
         persistence  = Persistence(baseline_dlm,  f'persistence-{self.variable_alias}{varvalue}')
         seasonalaverage  = SeasonalAverage(baseline_dlm, f'seasonal_average-{self.variable_alias}{varvalue}')
