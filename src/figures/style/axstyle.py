@@ -1,14 +1,16 @@
 from dataclasses import dataclass, field
 
+from ..types import EmptyString
+
 @dataclass
 class AxStyle:
     """ 
     Config that spans style-elements for a single axes.
     """
     # labels / titles
-    title:          str | None = None
-    label_x:        str | None = None
-    label_y:        str | None = None
+    title:          str = EmptyString
+    label_x:        str = EmptyString
+    label_y:        str = EmptyString
     tag:            str | None = None
 
     # x-axis
