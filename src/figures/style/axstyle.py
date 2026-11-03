@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from ..types import EmptyString
+from ..utils import EmptyString
 
 @dataclass
 class AxStyle:
