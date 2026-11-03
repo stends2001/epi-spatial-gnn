@@ -133,7 +133,7 @@ class GNNModelTrainMixin:
             if val_improved:
                 best_val_loss   = val_loss
                 patience_counter= 0
-                best_model_state= self.model.state_dict().copy()
+                best_model_state = {k: v.detach().clone() for k, v in self.model.state_dict().items()}
                 list_patience.append(False)
 
             else:
