@@ -89,7 +89,7 @@ class ExperimentRunner(ExperimentRunnerConfigMixin,
      
     def _set_databuilders(self) -> None:
         """"""
-        dataloader_managers_dict: dict[int | str | float, ExperimentDataBuilders] = {}
+        databuilders_dict: dict[int | str | float, ExperimentDataBuilders] = {}
         variable = self.expcfg.variable
 
         # looping over the values for the variable, the varvalues
@@ -109,6 +109,6 @@ class ExperimentRunner(ExperimentRunnerConfigMixin,
                     for graph in graphs_list
                 }
             )
-            dataloader_managers_dict[varvalue] = varvalue_databuilders
+            databuilders_dict[varvalue] = varvalue_databuilders
 
-        self.dataloadermanagers = dataloader_managers_dict
+        self.databuilders = databuilders_dict
