@@ -135,3 +135,18 @@ All models are subclasses of the ``BaseModel``, which creates a centralized ``Pr
 ``ExperimentLoader`` loads the ``ExperimentConfig`` and loads the models.
 
 ## Minimal running Example
+
+
+## Experiments
+
+Each experiment is run on multiple epidemiological seasons (denoted by the letters (A-D)). The experiments are defined as follows:
+
+| Experiment    | Disease    | Setting         |
+|:--------------|:---------- |:----------------|
+| Experiment 1  | Influenza  | Germany - NUTS3 |
+| Experiment 2  | Influenza  | Germany - NUTS2 |
+| Experiment 3  | Influenza  | Germany - NUTS1 |
+| Experiment 4  | Chickenpox | Hungary - NUTS3 |
+| Experiment 5  | Chickenpox | Germany - NUTS3 |
+| Experiment 6  | Chickenpox | Germany - NUTS2 |
+| Experiment 7  | Chickenpox | Germany - NUTS1 |
