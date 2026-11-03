@@ -58,7 +58,7 @@ class ExperimentLoader(ExperimentLoaderIOMixin,
             graphs_list = [] if self.expcfg.graphs is None else self.expcfg.graphs
     
             hl_dlms = ExperimentDataBuilders(
-                baseline = BaseLineDataBuilder(epo),
+                baseline = BaseLineDataBuilder(epo).build(),
                 graphs   = {
                     graph: GraphDataBuilder(epo)
                                .retrieve_static_graph(graph)
