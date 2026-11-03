@@ -46,7 +46,7 @@ class ExperimentLoader(ExperimentLoaderIOMixin,
 
     def _set_databuilders(self) -> None:
         """Shared dataloader construction — called by Runner and Loader. Sets dlms into `dlms`."""
-        dataloadermanagers: dict[int | str | float, ExperimentDataBuilders] = {}
+        databuilders: dict[int | str | float, ExperimentDataBuilders] = {}
         variable  = self.expcfg.variable
         varvalues = self.expcfg.variable_values
 
@@ -67,9 +67,9 @@ class ExperimentLoader(ExperimentLoaderIOMixin,
                 }
             )
 
-            dataloadermanagers[varvalue] = hl_dlms
+            databuilders[varvalue] = hl_dlms
 
-        self.dataloadermanagers = dataloadermanagers                   
+        self.databuilders = databuilders                   
 
     def load_models(self, show_progress: bool = False) -> None:
         """ 
