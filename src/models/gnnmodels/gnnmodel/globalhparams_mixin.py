@@ -95,11 +95,18 @@ class GNNModelGlobalhParamsMixin:
                 'exponential': {'gamma': 0.95},
                 'cosine':      {'T_max': 50},
                 'cosine_warm': {'T_0': 10, 'T_mult': 2},                
-                'plateau':     {'mode': 'min', 'factor': 0.5, 'patience': 10, 'verbose': True}
+                'plateau':     {'mode': 'min', 'factor': 0.5, 'patience': 10}
             }
             scheduler_kwargs = default_scheduler_kwargs.get(scheduler, {}) if scheduler else {}
-
+        
+        if scheduler.lower() == 'plateau':
+            scheduler_kwargs = {**scheduler_kwargs}
+            scheduler_kwargs.setdefault('threshold', min_delta)
+            scheduler_kwargs.setdefault('threshold_mode', 'abs')      
+        
         self.scheduler = self._get_scheduler(scheduler, self.optimizer, scheduler_kwargs)
+        global_hparams_config['optimizer_kwargs'] = optimizer_kwargs
+        global_hparams_config['scheduler_kwargs'] = scheduler_kwargs         
         self.config_info['global_hparams']  = global_hparams_config
         self._update_status('global_hparams_set')
 
