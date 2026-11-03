@@ -6,6 +6,7 @@ sbatch/
 data/
 notebooks/
 outcomes/
+execution/
 documentation.md
 commits.md
 todos.md
