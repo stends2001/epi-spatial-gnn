@@ -54,15 +54,18 @@ class GNNModelTrainMixin:
         verbose_loops, epoch_iter = self._return_verbose_iter()
 
         # ====== PRE-TRAINING ====== #
-        self.model.train()
         best_val_loss       = float('inf')
         patience_counter    = 0
         best_model_state    = None
+        best_epoch          = None              
+        stop_reason         = 'max epochs'     
+        repr_epoch          = 0    
 
-        list_val_loss : list[float]       = []
-        list_train_loss : list[float]     = []
-        list_patience : list[bool]        = []
-        list_lr : list[float]             = []
+        list_val_loss : list[float]         = []
+        list_train_loss : list[float]       = [] # loss on which model is optimized
+        list_train_loss_eval : list[float]  = [] # loss in eval mode (after epoch - optimization)
+        list_patience : list[bool]          = []
+        list_lr : list[float]               = []
 
         L_train             = len(train_loader)
         L_val               = len(val_loader)
@@ -79,6 +82,7 @@ class GNNModelTrainMixin:
             repr_epoch = epoch + 1 
 
             # ======================== TRAINING PHASE ========================
+            self.model.train()            
             total_loss = 0
             
             for snapshot in train_loader:
@@ -100,11 +104,22 @@ class GNNModelTrainMixin:
             list_train_loss.append(train_loss)
 
             # ======================== VALIDATION PHASE ========================
-            self.model.eval()
+            self.model.eval()            
             val_loss = 0
+            train_loss_eval = 0
             
-
             with torch.no_grad():
+                
+                # loss computation in eval mode on training data
+                for snapshot in train_loader:
+                    snapshot = snapshot.to(self.device)
+                    train_loss_eval += self.strategy.validation_step(
+                        model       = self.model,
+                        snapshot    = snapshot,
+                        loss_fn     = self.loss
+                    )
+
+                # val loss
                 for snapshot in val_loader:
                     snapshot = snapshot.to(self.device)
 
@@ -115,6 +130,9 @@ class GNNModelTrainMixin:
                     )
 
                     val_loss += loss_val
+
+            train_loss_eval = train_loss_eval / L_train
+            list_train_loss_eval.append(train_loss_eval)
             
             val_loss = val_loss / L_val
             list_val_loss.append(val_loss)
@@ -124,14 +142,13 @@ class GNNModelTrainMixin:
             current_lr = self.optimizer.param_groups[0]['lr']
             list_lr.append(current_lr)
             
-            self.model.train()
-
             # Check if validation loss improved
             val_improved = val_loss < (best_val_loss - self.min_delta)
 
             # if so => save best model
             if val_improved:
                 best_val_loss   = val_loss
+                best_epoch      = repr_epoch                
                 patience_counter= 0
                 best_model_state = {k: v.detach().clone() for k, v in self.model.state_dict().items()}
                 list_patience.append(False)
@@ -141,30 +158,34 @@ class GNNModelTrainMixin:
                 list_patience.append(True)
 
             if patience_counter >= self.patience:
-        
+                stop_reason = 'early stop'     
+                break    
 
-                if best_model_state is not None:
-                    self.model.load_state_dict(best_model_state)
-              
-
-                break              
-
-            # Step scheduler => scheduler.step requires val loss
             if isinstance(self.scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
-                self.scheduler.step(val_loss) # type: ignore
-            # for other schedulers, no arguments required
+                self.scheduler.step(val_loss) # type: ignore  
             else:
                 self.scheduler.step()
+            new_lr = self.optimizer.param_groups[0]['lr']  
 
-            new_lr = self.optimizer.param_groups[0]['lr']
-            
-            _ = self._return_verbose_line(repr_epoch, train_loss, val_loss,
+            _ = self._return_verbose_line(repr_epoch, train_loss_eval, val_loss,    # CHANGED: print eval-mode train loss
                                           "v" if val_improved else None,
                                           None if val_improved else f"{patience_counter}/{self.patience}",
                                           True if current_lr != new_lr else None
-                                          ) 
+                                          )                                    
+        
+        # ====== POST-TRAINING ====== #
+        # Restore best weights however the loop ended (early stop OR max epochs)
+        if best_model_state is not None:
+            self.model.load_state_dict(best_model_state)
+        self.model.eval()
+
+        self.best_epoch  = best_epoch
+        self.stop_reason = stop_reason
+        print(f"{stop_reason} at epoch {repr_epoch} | restored epoch {best_epoch} "
+              f"(val loss {best_val_loss:.4f})")
                      
         self.monitoring_metrics = pd.DataFrame({'train_loss'    : list_train_loss,
+                                                'train_loss_eval' : list_train_loss_eval,
                                                 'val_loss'      : list_val_loss,
                                                 'patience'      : list_patience,
                                                 'learning_rate' : list_lr}).reset_index(names='epoch') # index starting from 0
