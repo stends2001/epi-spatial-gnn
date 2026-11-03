@@ -2,6 +2,10 @@ from pathlib import Path
 from typing import Any, TYPE_CHECKING
 import os
 
+import random
+import numpy as np
+import torch
+
 from ..base import ExperimentConfig
 from ...dataloading import EpiConfig, BaseLineDataBuilder, GraphDataBuilder
 from ...models.gnnmodels.gnnmodel import GNNModel
@@ -48,10 +52,18 @@ class ExperimentRunnerModelMixin:
                               value: int | str | float, 
                               ml: str, 
                               global_hparams : dict[Any, Any], 
-                              graph : str | None):
+                              graph : str | None,
+                              seed : int):
         """
         loads, trains and saves single model
         """
+        def set_seed(seed: int) -> None:
+            random.seed(seed)
+            np.random.seed(seed)
+            torch.manual_seed(seed)     
+
+        set_seed(seed)
+
         if not self._model_to_run(modelname):
             return
 

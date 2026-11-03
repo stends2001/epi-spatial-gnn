@@ -79,7 +79,7 @@ class ExperimentRunner(ExperimentRunnerConfigMixin,
                         case 'GraphDataBuilder':
                             for graph in graphlist:
                                 modelname = self._get_model_name(ml, value, sd, graph)
-                                self._train_and_save_model(modelname, childclass, value, ml, global_hparams, graph)
+                                self._train_and_save_model(modelname, childclass, value, ml, global_hparams, graph, sd)
 
                         case 'BaseLineDataBuilder':
                             raise ValueError("got required databuilder as BaseLineDataBuilder: Baseline Models arent supposed to be run here.")
