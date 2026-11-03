@@ -15,7 +15,7 @@ class ExperimentRunnerModelMixin:
     def _load_model(self, modelname: str, childclass: GNNModel, value: int | str | float, ml: str, graph: str | None) -> GNNModel:
         """load instance of model"""
         dlm = self._get_databuilder(ml, value, graph)            
-        return childclass(name=modelname, dataloadermanager=dlm) 
+        return childclass(name=modelname, databuilder=dlm) 
 
     def _get_model_name(self, modeltype: str, varvalue: str | float | int, seed: int, graph : str | None = None) -> str:
         """return model name: to be saved as"""
