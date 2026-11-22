@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-
+from typing import Any
 from ..utils import EmptyString
 
 @dataclass
@@ -17,13 +17,13 @@ class AxStyle:
     ticks_x:        bool = True
     ticks_x_labels: bool = True
     ticks_x_args:   dict = field(default_factory=dict)
-    lims_x:         list[float] | None = None
+    lims_x:         list[Any] | None = None
 
     # y-axis
     ticks_y:        bool = True
     ticks_y_labels: bool = True
     ticks_y_args:   dict = field(default_factory=dict)
-    lims_y:         list[float] | None = None
+    lims_y:         list[Any] | None = None
 
     # legend
     legend:         bool = False
